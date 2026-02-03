@@ -11,6 +11,7 @@ import Account from './pages/Account';
 import RedirectPage from './pages/RedirectPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Admin from './pages/Admin';
 import { SupabaseConfigModal } from './components/SupabaseConfigModal';
 
 function AppContent() {
@@ -65,6 +66,7 @@ function AppContent() {
             <Route path="/withdraw" element={<Withdraw />} />
             <Route path="/history" element={<History />} />
             <Route path="/account" element={<Account />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<Navigate to="/dashboard" />} />
           </Routes>
         </AppLayout>

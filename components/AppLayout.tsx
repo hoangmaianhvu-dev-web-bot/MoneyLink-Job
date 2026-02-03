@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Wallet, User, LogOut, Zap, Bell, DollarSign, History } from 'lucide-react';
+import { Wallet, User, LogOut, Zap, Bell, DollarSign, History, ShieldAlert } from 'lucide-react';
 import { supabase } from '../supabaseClient';
-import { APP_NAME } from '../constants';
+import { APP_NAME, ADMIN_EMAIL } from '../constants';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -10,7 +10,20 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+  
   const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    checkAdmin();
+  }, []);
+
+  const checkAdmin = async () => {
+    const { data: { user } } = await supabase!.auth.getUser();
+    if (user && user.email === ADMIN_EMAIL) {
+        setIsAdmin(true);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase?.auth.signOut();
@@ -23,6 +36,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { icon: History, label: 'Lịch sử', path: '/history' }, 
     { icon: User, label: 'Tài khoản', path: '/account' }, 
   ];
+
+  if (isAdmin) {
+      navItems.push({ icon: ShieldAlert, label: 'Quản trị', path: '/admin' });
+  }
 
   return (
     <div className="min-h-screen bg-social-bg text-social-text flex">

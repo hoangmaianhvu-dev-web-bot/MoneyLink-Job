@@ -3,6 +3,7 @@
 // hoặc sử dụng localStorage để lưu trữ tạm thời.
 
 export const APP_NAME = "MoneyLink Job";
+export const ADMIN_EMAIL = "nthd1904@gmail.com"; // Email quyền Admin
 
 // Default credentials provided for the demo
 const DEFAULT_SUPABASE_URL = "https://oozmiwzpjdglatjzspgi.supabase.co";
@@ -89,6 +90,7 @@ create policy "Users view own completions" on public.task_completions for select
 -- Withdrawals
 create policy "Users view own withdrawals" on public.withdrawals for select using (auth.uid() = user_id);
 create policy "Users can create withdrawals" on public.withdrawals for insert with check (auth.uid() = user_id);
+create policy "Admins can update withdrawals" on public.withdrawals for update using (true);
 
 -- 8. Trigger: Tạo Profile khi đăng ký
 create or replace function public.handle_new_user()
