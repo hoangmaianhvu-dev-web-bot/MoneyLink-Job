@@ -1,22 +1,29 @@
-// Trong thực tế, các giá trị này nên lấy từ process.env
-// Để ứng dụng demo này hoạt động ngay, chúng ta sẽ cho phép người dùng nhập key vào UI
-// hoặc sử dụng localStorage để lưu trữ tạm thời.
-
+// CẤU HÌNH ỨNG DỤNG
 export const APP_NAME = "MoneyLink Job";
-export const ADMIN_EMAIL = "nthd1904@gmail.com"; // Email quyền Admin
+export const ADMIN_EMAIL = "nthd1904@gmail.com"; // Nhập email admin của bạn vào đây để hiện menu quản trị
+export const EXCHANGE_RATE = 23000; // 1 USD = 23,000 VND
 
-// Default credentials provided for the demo
-const DEFAULT_SUPABASE_URL = "https://oozmiwzpjdglatjzspgi.supabase.co";
-const DEFAULT_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vem1pd3pwamRnbGF0anpzcGdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwOTg0MTgsImV4cCI6MjA4NTY3NDQxOH0.JQ4aPbzhj26xdhKf1KF7WZEPHsGyi9EU3gfJ6oUlVxg";
+// ==============================================================================
+// CẤU HÌNH SUPABASE
+// Cách 1: Nhập trực tiếp (Hardcode) vào 2 dòng dưới đây (Dành cho chạy local hoặc sửa nhanh)
+// Cách 2: Cấu hình trong Vercel > Settings > Environment Variables (Khuyên dùng bảo mật)
+//         Tên biến: VITE_SUPABASE_URL và VITE_SUPABASE_ANON_KEY
+// ==============================================================================
+const MANUAL_URL = "https://oozmiwzpjdglatjzspgi.supabase.co"; 
+const MANUAL_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vem1pd3pwamRnbGF0anpzcGdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwOTg0MTgsImV4cCI6MjA4NTY3NDQxOH0.JQ4aPbzhj26xdhKf1KF7WZEPHsGyi9EU3gfJ6oUlVxg";
 
-// Helper để lấy Supabase keys từ localStorage nếu env không có
 export const getSupabaseConfig = () => {
-  const storedUrl = localStorage.getItem('sb_url');
-  const storedKey = localStorage.getItem('sb_key');
-  
-  // Ưu tiên biến môi trường, sau đó đến localStorage, cuối cùng là default hardcoded
-  const url = process.env.SUPABASE_URL || storedUrl || DEFAULT_SUPABASE_URL;
-  const key = process.env.SUPABASE_ANON_KEY || storedKey || DEFAULT_SUPABASE_KEY;
+  // Kiểm tra biến môi trường từ Vercel/System (Hỗ trợ Vite, CRA, Next.js)
+  // Lưu ý: Khi deploy Vercel với Vite, hãy dùng prefix VITE_
+  const envUrl = 
+    (typeof process !== 'undefined' ? (process.env.VITE_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL) : undefined);
+    
+  const envKey = 
+    (typeof process !== 'undefined' ? (process.env.VITE_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY) : undefined);
+
+  // Ưu tiên biến môi trường, nếu không có thì dùng giá trị nhập tay (MANUAL)
+  const url = envUrl || MANUAL_URL;
+  const key = envKey || MANUAL_KEY;
   
   return { url, key };
 };

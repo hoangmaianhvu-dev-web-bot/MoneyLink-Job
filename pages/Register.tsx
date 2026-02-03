@@ -4,8 +4,8 @@ import { supabase } from '../supabaseClient';
 import { Mail, Lock, UserPlus, AlertCircle, ArrowRight } from 'lucide-react';
 
 const Register: React.FC = () => {
-  const [email, setEmail] = useState('nthd1904@gmail.com');
-  const [password, setPassword] = useState('22072009');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();

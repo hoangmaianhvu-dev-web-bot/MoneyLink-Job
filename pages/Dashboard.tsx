@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { LinkItem, UserProfile } from '../types';
 import { Play, DollarSign, Wallet, RefreshCw, Plus, Clock, TrendingUp, Search, ShieldCheck, AlertCircle, ChevronRight, Briefcase } from 'lucide-react';
-import { SQL_SETUP_INSTRUCTION } from '../constants';
+import { SQL_SETUP_INSTRUCTION, EXCHANGE_RATE } from '../constants';
+import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
   const [tasks, setTasks] = useState<LinkItem[]>([]);
@@ -10,7 +11,6 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSql, setShowSql] = useState(false);
-  const [creating, setCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<'jobs' | 'history'>('jobs');
 
   const fetchData = useCallback(async () => {
@@ -66,28 +66,6 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, [fetchData]);
 
-  const createDemoTask = async () => {
-      setCreating(true);
-      const { data: { user } } = await supabase!.auth.getUser();
-      const slug = Math.random().toString(36).substring(2, 8);
-      await supabase!.from('links').insert({
-          user_id: user?.id,
-          original_url: 'https://google.com', // In reality this would be the destination
-          slug: slug,
-          reward_amount: 0.05 + Math.random() * 0.1
-      });
-      setCreating(false);
-      fetchData();
-  };
-
-  // Fake Ranking Data (Top Warriors)
-  const topUsers = [
-      { id: 1, name: 'Minh Tuấn', earning: '$120.5', img: 'https://ui-avatars.com/api/?name=Minh+Tuan&background=random' },
-      { id: 2, name: 'Thảo Linh', earning: '$98.2', img: 'https://ui-avatars.com/api/?name=Thao+Linh&background=random' },
-      { id: 3, name: 'Hoàng Nam', earning: '$85.0', img: 'https://ui-avatars.com/api/?name=Hoang+Nam&background=random' },
-      { id: 4, name: 'Gia Bảo', earning: '$72.5', img: 'https://ui-avatars.com/api/?name=Gia+Bao&background=random' },
-  ];
-
   return (
     <div className="px-0 md:px-6 py-4 space-y-6">
       
@@ -102,28 +80,17 @@ const Dashboard: React.FC = () => {
                   <h2 className="text-3xl font-bold text-white tracking-tight flex items-baseline gap-1">
                       ${profile?.balance?.toFixed(4) || '0.0000'}
                   </h2>
+                  <p className="text-sm font-medium text-slate-400 mt-1">
+                      ≈ {( (profile?.balance || 0) * EXCHANGE_RATE ).toLocaleString('vi-VN')}đ
+                  </p>
               </div>
-              <button className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-brand-500/20 z-10">
+              <Link to="/withdraw" className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-brand-500/20 z-10">
                   Rút tiền ngay
-              </button>
+              </Link>
           </div>
       </div>
 
-      {/* 2. TOP RANKING (Ticker) */}
-      <div className="bg-social-card/50 border-y border-slate-800 py-3 overflow-hidden">
-          <div className="flex gap-6 animate-marquee whitespace-nowrap px-4">
-              <span className="text-xs font-bold text-brand-500 bg-brand-500/10 px-2 py-1 rounded">BXH NGÀY</span>
-              {topUsers.map(u => (
-                  <div key={u.id} className="flex items-center gap-2">
-                      <img src={u.img} className="w-5 h-5 rounded-full" alt="" />
-                      <span className="text-xs text-slate-300 font-medium">{u.name}</span>
-                      <span className="text-xs text-green-400 font-bold">+{u.earning}</span>
-                  </div>
-              ))}
-          </div>
-      </div>
-
-      {/* 3. MAIN CONTENT */}
+      {/* 2. MAIN CONTENT */}
       <div className="px-4 md:px-0">
           {/* Tabs */}
           <div className="flex gap-2 mb-6 bg-slate-900/50 p-1 rounded-xl w-fit">
@@ -148,13 +115,6 @@ const Dashboard: React.FC = () => {
                    Danh sách nhiệm vụ
                </h3>
                <div className="flex gap-2">
-                   <button 
-                        onClick={createDemoTask} 
-                        disabled={creating}
-                        className="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-medium border border-slate-700 transition-colors"
-                    >
-                        {creating ? 'Đang tạo...' : '+ Demo Job'}
-                    </button>
                     <button onClick={fetchData} className="p-1.5 bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
                         <RefreshCw size={18} />
                     </button>
@@ -186,9 +146,6 @@ const Dashboard: React.FC = () => {
                      </div>
                      <h3 className="text-white font-bold mb-2">Hết nhiệm vụ tạm thời</h3>
                      <p className="text-slate-400 text-sm mb-6">Bạn đã làm rất tốt! Hãy quay lại sau ít phút để nhận thêm việc mới.</p>
-                     <button onClick={createDemoTask} className="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors">
-                         Tạo việc thử nghiệm
-                     </button>
                  </div>
               ) : (
                   tasks.map((task) => (
@@ -217,9 +174,14 @@ const Dashboard: React.FC = () => {
 
                           {/* Reward & Action */}
                           <div className="flex items-center justify-between w-full md:w-auto md:flex-col md:items-end gap-3 mt-2 md:mt-0 pl-14 md:pl-0">
-                              <span className="text-green-400 font-extrabold text-lg flex items-center">
-                                  +${task.reward_amount?.toFixed(4) || '0.0000'}
-                              </span>
+                              <div className="text-right">
+                                  <span className="text-green-400 font-extrabold text-lg flex items-center justify-end">
+                                      +${task.reward_amount?.toFixed(4) || '0.0000'}
+                                  </span>
+                                  <span className="text-xs text-slate-500 font-medium block">
+                                      ≈ {(task.reward_amount * EXCHANGE_RATE).toLocaleString('vi-VN')}đ
+                                  </span>
+                              </div>
                               <a 
                                   href={`#/v/${task.slug}`} 
                                   target="_blank" 

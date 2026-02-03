@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { UserProfile } from '../types';
 import { ShieldAlert, Users, CheckCircle, XCircle, DollarSign, Loader2, Database, Copy, Check } from 'lucide-react';
-import { SQL_SETUP_INSTRUCTION } from '../constants';
+import { SQL_SETUP_INSTRUCTION, EXCHANGE_RATE } from '../constants';
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'withdrawals' | 'users' | 'system'>('withdrawals');
@@ -127,6 +127,8 @@ const Admin: React.FC = () => {
       setTimeout(() => setCopied(false), 2000);
   };
 
+  const totalPaid = withdrawals.filter(w => w.status === 'approved').reduce((acc, curr) => acc + curr.amount, 0);
+
   return (
     <div className="px-4 md:px-6 py-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -155,8 +157,9 @@ const Admin: React.FC = () => {
           <div className="bg-social-card border border-slate-800 p-4 rounded-xl">
               <p className="text-slate-400 text-xs font-bold uppercase">Tổng tiền đã chi</p>
               <h3 className="text-2xl font-bold text-green-500 mt-1">
-                  ${withdrawals.filter(w => w.status === 'approved').reduce((acc, curr) => acc + curr.amount, 0).toFixed(2)}
+                  ${totalPaid.toFixed(2)}
               </h3>
+              <p className="text-xs text-slate-500 mt-0.5">≈ {(totalPaid * EXCHANGE_RATE).toLocaleString('vi-VN')}đ</p>
           </div>
       </div>
 
@@ -212,7 +215,12 @@ const Admin: React.FC = () => {
                                           <div className="font-bold text-white">{w.profiles?.full_name || 'N/A'}</div>
                                           <div className="text-xs text-slate-500">{w.profiles?.email}</div>
                                       </td>
-                                      <td className="p-4 font-bold text-white">${w.amount}</td>
+                                      <td className="p-4 font-bold text-white">
+                                          ${w.amount}
+                                          <div className="text-[10px] text-slate-500 font-normal">
+                                              ≈ {(w.amount * EXCHANGE_RATE).toLocaleString('vi-VN')}đ
+                                          </div>
+                                      </td>
                                       <td className="p-4">
                                           <span className="block font-bold text-brand-400">{w.bank_name}</span>
                                           <span className="text-xs text-slate-400">{w.account_number}</span>
@@ -281,7 +289,12 @@ const Admin: React.FC = () => {
                                           </div>
                                       </td>
                                       <td className="p-4 text-slate-400">{u.email}</td>
-                                      <td className="p-4 font-bold text-green-400">${u.balance.toFixed(4)}</td>
+                                      <td className="p-4">
+                                          <div className="font-bold text-green-400">${u.balance.toFixed(4)}</div>
+                                          <div className="text-[10px] text-slate-500">
+                                              ≈ {(u.balance * EXCHANGE_RATE).toLocaleString('vi-VN')}đ
+                                          </div>
+                                      </td>
                                       <td className="p-4 text-slate-400">
                                           {u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN') : 'N/A'}
                                       </td>

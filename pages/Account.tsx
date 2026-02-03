@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { UserProfile } from '../types';
 import { User, Mail, LogOut, Shield, ChevronRight, Gift, HelpCircle, Edit2, X, Save, Lock, AlertCircle, CheckCircle, Copy, ExternalLink, MessageCircle } from 'lucide-react';
+import { EXCHANGE_RATE } from '../constants';
 
 const Account: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -294,6 +295,7 @@ const Account: React.FC = () => {
                </div>
                <p className="text-slate-400 text-xs font-bold uppercase">Tổng thu nhập</p>
                <p className="text-2xl font-bold text-white mt-1">${profile?.balance.toFixed(4) || '0.00'}</p>
+               <p className="text-xs font-medium text-slate-400 mt-0.5">≈ {( (profile?.balance || 0) * EXCHANGE_RATE ).toLocaleString('vi-VN')}đ</p>
            </div>
            <div className="bg-social-card border border-slate-800 rounded-2xl p-5 group hover:border-purple-500/30 transition-colors">
                <p className="text-slate-400 text-xs font-bold uppercase">ID Thành viên</p>

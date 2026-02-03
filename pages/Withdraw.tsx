@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { UserProfile } from '../types';
-import { Wallet, CreditCard, AlertCircle, CheckCircle, ArrowRight, Banknote } from 'lucide-react';
-import { SQL_SETUP_INSTRUCTION } from '../constants';
+import { Wallet, CreditCard, AlertCircle, CheckCircle, ArrowRight, Banknote, Coins } from 'lucide-react';
+import { SQL_SETUP_INSTRUCTION, EXCHANGE_RATE } from '../constants';
 
 const Withdraw: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -78,6 +78,7 @@ const Withdraw: React.FC = () => {
   };
 
   const quickAmounts = [1, 5, 10, 20, 50];
+  const estimatedVND = amount ? (parseFloat(amount) * EXCHANGE_RATE) : 0;
 
   return (
     <div className="px-4 md:px-6 py-6 space-y-6">
@@ -94,6 +95,15 @@ const Withdraw: React.FC = () => {
           <h2 className="text-4xl font-extrabold text-white tracking-tight flex items-baseline gap-1">
               ${profile?.balance?.toFixed(4) || '0.0000'}
           </h2>
+          <p className="text-white/80 mt-1 font-medium">≈ {( (profile?.balance || 0) * EXCHANGE_RATE ).toLocaleString('vi-VN')}đ</p>
+      </div>
+      
+      {/* Exchange Rate Info */}
+      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-3 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+              <Coins size={16} />
+          </div>
+          <span className="text-sm text-slate-300 font-medium">Tỉ giá quy đổi: <span className="text-white font-bold">1 USD = {EXCHANGE_RATE.toLocaleString('vi-VN')} VNĐ</span></span>
       </div>
 
       {showSql && (
@@ -179,6 +189,10 @@ const Withdraw: React.FC = () => {
                         className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-10 pr-4 py-3 text-white text-lg font-bold focus:border-brand-500 outline-none"
                         placeholder="0.00"
                       />
+                  </div>
+                  <div className="mt-2 text-right">
+                      <span className="text-sm text-slate-400">Thực nhận: </span>
+                      <span className="text-lg font-bold text-green-400">{estimatedVND.toLocaleString('vi-VN')} VNĐ</span>
                   </div>
                   <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar">
                       {quickAmounts.map(val => (

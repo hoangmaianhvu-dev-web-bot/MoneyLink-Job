@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Loader2, CheckCircle, Search, Clock, DollarSign, Copy, Globe, AlertTriangle, Key } from 'lucide-react';
+import { EXCHANGE_RATE } from '../constants';
 
 const RedirectPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -228,7 +229,10 @@ const RedirectPage: React.FC = () => {
                     <CheckCircle size={48} className="text-white" />
                 </div>
                 <h2 className="text-3xl font-bold text-white mb-2">Thành công!</h2>
-                <p className="text-green-400 text-xl font-bold mb-8">+{linkData?.reward_amount} USD</p>
+                <div className="text-center mb-8">
+                    <p className="text-green-400 text-xl font-bold">+${linkData?.reward_amount}</p>
+                    <p className="text-slate-500 text-sm">≈ {(linkData?.reward_amount * EXCHANGE_RATE).toLocaleString('vi-VN')}đ</p>
+                </div>
                 <p className="text-slate-500">Đang quay về danh sách việc...</p>
             </div>
         )}

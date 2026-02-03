@@ -12,7 +12,6 @@ import RedirectPage from './pages/RedirectPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Admin from './pages/Admin';
-import { SupabaseConfigModal } from './components/SupabaseConfigModal';
 
 function AppContent() {
   const [session, setSession] = useState<any>(null);
@@ -58,7 +57,6 @@ function AppContent() {
   if (session) {
     return (
       <>
-        <SupabaseConfigModal />
         <AppLayout>
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" />} />
@@ -77,7 +75,6 @@ function AppContent() {
   // Public -> Use Landing Page Layout (Navbar)
   return (
     <>
-      <SupabaseConfigModal />
       <Navbar session={session} />
       <Routes>
         <Route path="/" element={<Home />} />

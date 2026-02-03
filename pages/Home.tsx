@@ -17,7 +17,7 @@ const Home: React.FC = () => {
                 <Zap size={14} fill="currentColor" /> Nền tảng kiếm tiền #1 Việt Nam
             </div>
             <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight mb-6 leading-tight">
-              Lướt Social. <br />
+              Làm Nhiệm Vụ Đơn Giản <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-purple-500">
                 Kiếm Tiền Thật.
               </span>
@@ -37,9 +37,9 @@ const Home: React.FC = () => {
             <div className="mt-12 flex justify-center items-center gap-8 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
                <span className="text-2xl font-bold text-slate-500">Partner with</span>
                {/* Fake Logos text */}
-               <span className="font-bold text-xl">Google</span>
-               <span className="font-bold text-xl">TikTok</span>
-               <span className="font-bold text-xl">Meta</span>
+               <span className="font-bold text-xl">LINK4M</span>
+               <span className="font-bold text-xl">YEUMONEY</span>
+               <span className="font-bold text-xl">YEULINK</span>
             </div>
           </div>
         </div>
@@ -61,7 +61,7 @@ const Home: React.FC = () => {
               <Clock className="w-7 h-7 text-purple-500" />
             </div>
             <h3 className="text-2xl font-bold text-white mb-3">Thao Tác Nhanh Gọn</h3>
-            <p className="text-[#b0b3b8] leading-relaxed">Giao diện tối ưu như Facebook/TikTok. Chỉ mất 30 giây để hoàn thành một nhiệm vụ.</p>
+            <p className="text-[#b0b3b8] leading-relaxed">Nhiệm Vụ Dễ Dàng Đơn Giản Chỉ Mất 1-2 Phút Mỗi Ngày Thu Nhập 1.000.000 - 10.000.000 1 Tháng.</p>
           </div>
 
           <div className="p-8 bg-[#242526] rounded-3xl border border-slate-800 hover:border-green-500/50 transition-all hover:transform hover:-translate-y-1 group">

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Link as LinkIcon, Menu, X, LayoutDashboard, Settings } from 'lucide-react';
+import { LogOut, Link as LinkIcon, Menu, X, LayoutDashboard } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { APP_NAME } from '../constants';
 
@@ -17,11 +17,6 @@ const Navbar: React.FC<NavbarProps> = ({ session }) => {
       await supabase.auth.signOut();
       navigate('/login');
     }
-  };
-
-  const openSettings = () => {
-    window.dispatchEvent(new CustomEvent('open-supabase-config'));
-    setIsOpen(false);
   };
 
   return (
@@ -64,13 +59,6 @@ const Navbar: React.FC<NavbarProps> = ({ session }) => {
                   </Link>
                 </>
               )}
-              <button 
-                onClick={openSettings}
-                className="text-slate-400 hover:text-white p-2 rounded-full hover:bg-slate-800 transition-colors"
-                title="Cấu hình Database"
-              >
-                <Settings size={20} />
-              </button>
             </div>
           </div>
           
@@ -114,12 +102,6 @@ const Navbar: React.FC<NavbarProps> = ({ session }) => {
                 </Link>
               </>
             )}
-            <button 
-              onClick={openSettings}
-              className="w-full text-left text-slate-400 hover:text-white block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2"
-            >
-              <Settings size={18} /> Cấu hình
-            </button>
           </div>
         </div>
       )}
