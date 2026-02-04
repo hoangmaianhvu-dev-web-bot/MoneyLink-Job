@@ -1,22 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { UserProfile } from '../types';
-import { Wallet, CreditCard, AlertCircle, CheckCircle, ArrowRight, Banknote, Coins } from 'lucide-react';
+import { Wallet, AlertCircle, CheckCircle, ArrowRight, Banknote, Coins } from 'lucide-react';
 import { SQL_SETUP_INSTRUCTION, EXCHANGE_RATE } from '../constants';
 
 const Withdraw: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState<string>('');
-  const [bankName, setBankName] = useState('Momo');
-  const [accountNumber, setAccountNumber] = useState('');
-  const [accountName, setAccountName] = useState('');
+  const [bankName, setBankName] = useState('Thẻ cào'); // Mặc định
+  
+  // account_number trong DB sẽ lưu: STK (Banking) hoặc Email nhận (Thẻ)
+  const [inputValue1, setInputValue1] = useState(''); 
+  
+  // account_name trong DB sẽ lưu: Tên chủ TK (Banking) hoặc Loại thẻ/Nhà mạng (Thẻ)
+  const [inputValue2, setInputValue2] = useState(''); 
+  
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [showSql, setShowSql] = useState(false);
 
   useEffect(() => {
     fetchProfile();
   }, []);
+
+  // Tự động điền email của user vào ô nhận mã nếu là Thẻ cào/Garena
+  useEffect(() => {
+    if ((bankName === 'Thẻ cào' || bankName === 'Thẻ Garena') && profile?.email) {
+        setInputValue1(profile.email);
+    } else {
+        setInputValue1('');
+    }
+    setInputValue2(''); // Reset field 2 khi đổi method
+  }, [bankName, profile]);
 
   const fetchProfile = async () => {
     const { data: { user } } = await supabase!.auth.getUser();
@@ -53,12 +68,11 @@ const Withdraw: React.FC = () => {
       const { error } = await supabase!.rpc('request_withdrawal', {
         amount: withdrawAmount,
         bank_name: bankName,
-        account_number: accountNumber,
-        account_name: accountName
+        account_number: inputValue1, // Email hoặc STK
+        account_name: inputValue2 // Nhà mạng hoặc Tên chủ TK
       });
 
       if (error) {
-          // If RPC fails (likely not created), verify table exists
           if (error.code === '42P01' || error.message.includes('function request_withdrawal does not exist')) {
              setShowSql(true);
              throw new Error('Hệ thống chưa được cập nhật (SQL). Vui lòng liên hệ Admin.');
@@ -79,6 +93,15 @@ const Withdraw: React.FC = () => {
 
   const quickAmounts = [1, 5, 10, 20, 50];
   const estimatedVND = amount ? (parseFloat(amount) * EXCHANGE_RATE) : 0;
+
+  // Logic hiển thị label
+  const isCard = bankName === 'Thẻ cào' || bankName === 'Thẻ Garena';
+  
+  const label1 = isCard ? 'Gmail nhận mã thẻ' : 'Số tài khoản ngân hàng';
+  const placeholder1 = isCard ? 'example@gmail.com' : 'VD: 1903...';
+  
+  const label2 = isCard ? 'Nhà mạng (Viettel/Vina/Mobi...)' : 'Tên người thụ hưởng';
+  const placeholder2 = isCard ? 'VD: Viettel' : 'NGUYEN VAN A';
 
   return (
     <div className="px-4 md:px-6 py-6 space-y-6">
@@ -111,7 +134,7 @@ const Withdraw: React.FC = () => {
               <div className="flex items-center gap-2 text-yellow-500 font-bold mb-2">
                   <AlertCircle size={20} /> Cần cập nhật Database
               </div>
-              <p className="text-sm text-slate-400 mb-2">Chức năng rút tiền cần bảng `withdrawals` và hàm RPC.</p>
+              <p className="text-sm text-slate-400 mb-2">Chức năng rút tiền cần bảng `withdrawals` cập nhật.</p>
               <pre className="bg-black/50 p-4 rounded-xl overflow-x-auto text-xs text-green-400 font-mono">
                   {SQL_SETUP_INSTRUCTION}
               </pre>
@@ -131,7 +154,7 @@ const Withdraw: React.FC = () => {
               <div>
                   <label className="block text-sm font-bold text-slate-300 mb-2">Phương thức nhận tiền</label>
                   <div className="grid grid-cols-3 gap-3">
-                      {['Momo', 'Banking', 'USDT'].map(type => (
+                      {['Thẻ cào', 'Banking', 'Thẻ Garena'].map(type => (
                           <button
                             key={type}
                             type="button"
@@ -150,24 +173,24 @@ const Withdraw: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                      <label className="block text-sm font-bold text-slate-300 mb-2">Số tài khoản / Ví</label>
+                      <label className="block text-sm font-bold text-slate-300 mb-2">{label1}</label>
                       <input 
-                        type="text" 
+                        type={isCard ? "email" : "text"}
                         required
-                        value={accountNumber}
-                        onChange={(e) => setAccountNumber(e.target.value)}
-                        placeholder="09xxx hoặc Số thẻ"
+                        value={inputValue1}
+                        onChange={(e) => setInputValue1(e.target.value)}
+                        placeholder={placeholder1}
                         className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-brand-500 outline-none"
                       />
                   </div>
                   <div>
-                      <label className="block text-sm font-bold text-slate-300 mb-2">Tên người thụ hưởng</label>
+                      <label className="block text-sm font-bold text-slate-300 mb-2">{label2}</label>
                       <input 
                         type="text" 
                         required
-                        value={accountName}
-                        onChange={(e) => setAccountName(e.target.value.toUpperCase())}
-                        placeholder="NGUYEN VAN A"
+                        value={inputValue2}
+                        onChange={(e) => setInputValue2(e.target.value.toUpperCase())}
+                        placeholder={placeholder2}
                         className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white focus:border-brand-500 outline-none uppercase"
                       />
                   </div>
@@ -221,9 +244,10 @@ const Withdraw: React.FC = () => {
       <div className="bg-slate-800/50 rounded-xl p-4 text-xs text-slate-400 border border-slate-700">
           <p className="font-bold text-slate-300 mb-1">Lưu ý:</p>
           <ul className="list-disc list-inside space-y-1">
+              <li>Mã thẻ cào/Garena sẽ được gửi vào Lịch sử giao dịch hoặc Email của bạn.</li>
               <li>Thời gian xử lý: 15 phút - 24 giờ.</li>
               <li>Số tiền rút tối thiểu: $1.00.</li>
-              <li>Vui lòng kiểm tra kỹ thông tin tài khoản trước khi xác nhận.</li>
+              <li>Vui lòng nhập chính xác Gmail để nhận thông tin.</li>
           </ul>
       </div>
     </div>

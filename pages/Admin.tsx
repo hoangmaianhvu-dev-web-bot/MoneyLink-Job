@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { UserProfile } from '../types';
-import { ShieldAlert, Users, CheckCircle, XCircle, DollarSign, Loader2, Database, Copy, Check } from 'lucide-react';
-import { SQL_SETUP_INSTRUCTION, EXCHANGE_RATE } from '../constants';
+import { ShieldAlert, Users, CheckCircle, XCircle, DollarSign, Loader2, Database, Copy, Check, PlusCircle, CreditCard, Send } from 'lucide-react';
+import { SQL_SETUP_INSTRUCTION, EXCHANGE_RATE, ADMIN_EMAIL } from '../constants';
+import { useNavigate } from 'react-router-dom';
 
 const Admin: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'withdrawals' | 'users' | 'system'>('withdrawals');
@@ -11,6 +12,24 @@ const Admin: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  
+  // State for card approval
+  const [approvingCardId, setApprovingCardId] = useState<string | null>(null);
+  const [cardSerial, setCardSerial] = useState('');
+  const [cardCode, setCardCode] = useState('');
+
+  const navigate = useNavigate();
+
+  // Security Check
+  useEffect(() => {
+    const checkAuth = async () => {
+        const { data: { user } } = await supabase!.auth.getUser();
+        if (!user || user.email !== ADMIN_EMAIL) {
+            navigate('/dashboard');
+        }
+    };
+    checkAuth();
+  }, [navigate]);
 
   useEffect(() => {
     fetchData();
@@ -20,7 +39,6 @@ const Admin: React.FC = () => {
     setLoading(true);
     try {
         if (activeTab === 'withdrawals') {
-            // Fetch withdrawals
             const { data: wData, error: wError } = await supabase!
                 .from('withdrawals')
                 .select('*')
@@ -28,7 +46,6 @@ const Admin: React.FC = () => {
             
             if (wError) throw wError;
 
-            // Fetch related profiles manually to ensure robust joining
             const userIds = Array.from(new Set((wData || []).map((w: any) => w.user_id)));
             let pMap: Record<string, any> = {};
 
@@ -46,7 +63,6 @@ const Admin: React.FC = () => {
                 }
             }
 
-            // Combine data
             const combined = (wData || []).map((w: any) => ({
                 ...w,
                 profiles: pMap[w.user_id] || { email: 'Unknown', full_name: 'N/A' }
@@ -70,16 +86,42 @@ const Admin: React.FC = () => {
   };
 
   const handleApprove = async (withdrawal: any) => {
+      // Nếu là thẻ cào, mở form nhập liệu
+      if (withdrawal.bank_name === 'Thẻ cào' || withdrawal.bank_name === 'Thẻ Garena') {
+          if (approvingCardId === withdrawal.id) {
+              // Submit card info
+              if (!cardSerial || !cardCode) {
+                  alert("Vui lòng nhập Seri và Mã thẻ!");
+                  return;
+              }
+              submitApprove(withdrawal, { card_serial: cardSerial, card_code: cardCode });
+          } else {
+              // Open input mode
+              setApprovingCardId(withdrawal.id);
+              setCardSerial('');
+              setCardCode('');
+          }
+      } else {
+          // Banking - Direct approve
+          submitApprove(withdrawal);
+      }
+  };
+
+  const submitApprove = async (withdrawal: any, extraData: any = {}) => {
       setProcessingId(withdrawal.id);
       try {
           const { error } = await supabase!
             .from('withdrawals')
-            .update({ status: 'approved' })
+            .update({ 
+                status: 'approved',
+                ...extraData
+            })
             .eq('id', withdrawal.id);
           
           if (error) throw error;
           
-          setWithdrawals(prev => prev.map(w => w.id === withdrawal.id ? { ...w, status: 'approved' } : w));
+          setWithdrawals(prev => prev.map(w => w.id === withdrawal.id ? { ...w, status: 'approved', ...extraData } : w));
+          setApprovingCardId(null);
       } catch (error) {
           alert('Lỗi phê duyệt: ' + (error as any).message);
       } finally {
@@ -92,14 +134,12 @@ const Admin: React.FC = () => {
       
       setProcessingId(withdrawal.id);
       try {
-          // 1. Update withdrawal status
           const { error: wError } = await supabase!
             .from('withdrawals')
             .update({ status: 'rejected' })
             .eq('id', withdrawal.id);
           if (wError) throw wError;
 
-          // 2. Refund balance to user
           const { data: profile } = await supabase!
             .from('profiles')
             .select('balance')
@@ -114,6 +154,7 @@ const Admin: React.FC = () => {
           }
 
           setWithdrawals(prev => prev.map(w => w.id === withdrawal.id ? { ...w, status: 'rejected' } : w));
+          setApprovingCardId(null);
       } catch (error) {
           alert('Lỗi từ chối: ' + (error as any).message);
       } finally {
@@ -127,6 +168,25 @@ const Admin: React.FC = () => {
       setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSeedData = async () => {
+      if (!window.confirm('Tạo dữ liệu mẫu?')) return;
+      setLoading(true);
+      try {
+          const { data: { user } } = await supabase!.auth.getUser();
+          if (!user) return;
+          const sampleLinks = [
+              { user_id: user.id, original_url: 'https://vaytienonline.com', slug: 'vay-tien-' + Date.now(), reward_amount: 0.05, views: 0 },
+              { user_id: user.id, original_url: 'https://fecredit.com', slug: 'fe-credit-' + Date.now(), reward_amount: 0.08, views: 0 },
+          ];
+          await supabase!.from('links').insert(sampleLinks);
+          alert('Tạo dữ liệu thành công!');
+      } catch (err: any) {
+          alert('Lỗi: ' + err.message);
+      } finally {
+          setLoading(false);
+      }
+  };
+
   const totalPaid = withdrawals.filter(w => w.status === 'approved').reduce((acc, curr) => acc + curr.amount, 0);
 
   return (
@@ -138,29 +198,6 @@ const Admin: React.FC = () => {
         <button onClick={fetchData} className="p-2 bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
             <Loader2 size={20} className={loading ? 'animate-spin' : ''} />
         </button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-social-card border border-slate-800 p-4 rounded-xl">
-              <p className="text-slate-400 text-xs font-bold uppercase">Yêu cầu chờ duyệt</p>
-              <h3 className="text-2xl font-bold text-yellow-500 mt-1">
-                  {withdrawals.filter(w => w.status === 'pending').length}
-              </h3>
-          </div>
-          <div className="bg-social-card border border-slate-800 p-4 rounded-xl">
-              <p className="text-slate-400 text-xs font-bold uppercase">Tổng thành viên</p>
-              <h3 className="text-2xl font-bold text-blue-500 mt-1">
-                  {users.length > 0 ? users.length : '...'}
-              </h3>
-          </div>
-          <div className="bg-social-card border border-slate-800 p-4 rounded-xl">
-              <p className="text-slate-400 text-xs font-bold uppercase">Tổng tiền đã chi</p>
-              <h3 className="text-2xl font-bold text-green-500 mt-1">
-                  ${totalPaid.toFixed(2)}
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">≈ {(totalPaid * EXCHANGE_RATE).toLocaleString('vi-VN')}đ</p>
-          </div>
       </div>
 
       {/* Tabs */}
@@ -208,8 +245,6 @@ const Admin: React.FC = () => {
                                   <tr key={w.id} className="hover:bg-slate-800/30 transition-colors">
                                       <td className="p-4 text-slate-400 whitespace-nowrap">
                                           {new Date(w.created_at).toLocaleDateString('vi-VN')}
-                                          <br/>
-                                          <span className="text-xs">{new Date(w.created_at).toLocaleTimeString('vi-VN')}</span>
                                       </td>
                                       <td className="p-4">
                                           <div className="font-bold text-white">{w.profiles?.full_name || 'N/A'}</div>
@@ -223,8 +258,21 @@ const Admin: React.FC = () => {
                                       </td>
                                       <td className="p-4">
                                           <span className="block font-bold text-brand-400">{w.bank_name}</span>
-                                          <span className="text-xs text-slate-400">{w.account_number}</span>
-                                          <span className="text-xs text-slate-400 block uppercase">{w.account_name}</span>
+                                          {/* Nếu là thẻ cào, hiển thị Email nhận và Nhà mạng */}
+                                          <span className="text-xs text-slate-300 block">
+                                              {w.account_name} 
+                                          </span>
+                                          <span className="text-xs text-slate-500 block break-all">
+                                              {w.account_number}
+                                          </span>
+                                          
+                                          {/* Hiển thị thẻ đã gửi nếu có */}
+                                          {w.status === 'approved' && w.card_code && (
+                                              <div className="mt-2 bg-green-500/10 p-2 rounded border border-green-500/20">
+                                                  <p className="text-[10px] text-green-400 font-mono">Seri: {w.card_serial}</p>
+                                                  <p className="text-[10px] text-green-400 font-mono">Mã: {w.card_code}</p>
+                                              </div>
+                                          )}
                                       </td>
                                       <td className="p-4">
                                           <span className={`px-2 py-1 rounded text-xs font-bold ${
@@ -237,21 +285,44 @@ const Admin: React.FC = () => {
                                       </td>
                                       <td className="p-4 text-right">
                                           {w.status === 'pending' && (
-                                              <div className="flex justify-end gap-2">
-                                                  <button 
-                                                    onClick={() => handleApprove(w)}
-                                                    disabled={processingId === w.id}
-                                                    className="p-2 bg-green-600 hover:bg-green-500 text-white rounded-lg disabled:opacity-50 transition-colors" title="Duyệt"
-                                                  >
-                                                      <CheckCircle size={18} />
-                                                  </button>
-                                                  <button 
-                                                    onClick={() => handleReject(w)}
-                                                    disabled={processingId === w.id}
-                                                    className="p-2 bg-red-600 hover:bg-red-500 text-white rounded-lg disabled:opacity-50 transition-colors" title="Từ chối & Hoàn tiền"
-                                                  >
-                                                      <XCircle size={18} />
-                                                  </button>
+                                              <div className="flex flex-col gap-2 items-end">
+                                                  {approvingCardId === w.id ? (
+                                                      <div className="bg-slate-900 border border-slate-700 p-3 rounded-lg flex flex-col gap-2 w-48 shadow-lg animate-fade-in z-10">
+                                                          <input 
+                                                            className="bg-slate-800 border border-slate-700 text-xs p-1.5 rounded text-white" 
+                                                            placeholder="Nhập Seri..."
+                                                            value={cardSerial}
+                                                            onChange={e => setCardSerial(e.target.value)}
+                                                          />
+                                                          <input 
+                                                            className="bg-slate-800 border border-slate-700 text-xs p-1.5 rounded text-white" 
+                                                            placeholder="Nhập Mã Thẻ..."
+                                                            value={cardCode}
+                                                            onChange={e => setCardCode(e.target.value)}
+                                                          />
+                                                          <div className="flex gap-1">
+                                                              <button onClick={() => setApprovingCardId(null)} className="flex-1 bg-slate-700 text-xs py-1 rounded">Hủy</button>
+                                                              <button onClick={() => handleApprove(w)} className="flex-1 bg-green-600 text-white text-xs py-1 rounded font-bold">Gửi</button>
+                                                          </div>
+                                                      </div>
+                                                  ) : (
+                                                      <div className="flex justify-end gap-2">
+                                                          <button 
+                                                            onClick={() => handleApprove(w)}
+                                                            disabled={processingId === w.id}
+                                                            className="p-2 bg-green-600 hover:bg-green-500 text-white rounded-lg disabled:opacity-50 transition-colors" title="Duyệt"
+                                                          >
+                                                              <CheckCircle size={18} />
+                                                          </button>
+                                                          <button 
+                                                            onClick={() => handleReject(w)}
+                                                            disabled={processingId === w.id}
+                                                            className="p-2 bg-red-600 hover:bg-red-500 text-white rounded-lg disabled:opacity-50 transition-colors" title="Từ chối & Hoàn tiền"
+                                                          >
+                                                              <XCircle size={18} />
+                                                          </button>
+                                                      </div>
+                                                  )}
                                               </div>
                                           )}
                                       </td>
@@ -268,39 +339,22 @@ const Admin: React.FC = () => {
                   <table className="w-full text-left border-collapse">
                       <thead>
                           <tr className="bg-slate-900/50 text-slate-400 text-xs uppercase">
-                              <th className="p-4">ID</th>
-                              <th className="p-4">Họ tên</th>
                               <th className="p-4">Email</th>
                               <th className="p-4">Số dư</th>
                               <th className="p-4">Ngày tham gia</th>
                           </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800 text-sm">
-                           {users.length === 0 ? (
-                              <tr><td colSpan={5} className="p-8 text-center text-slate-500">Không có dữ liệu</td></tr>
-                          ) : (
-                              users.map(u => (
-                                  <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
-                                      <td className="p-4 text-slate-500 font-mono text-xs">{u.id.substring(0, 8)}...</td>
-                                      <td className="p-4 font-bold text-white">
-                                          <div className="flex items-center gap-2">
-                                              <img src={`https://ui-avatars.com/api/?name=${u.full_name || u.email}&size=24&background=random`} className="w-6 h-6 rounded-full" alt="" />
-                                              {u.full_name || 'N/A'}
-                                          </div>
-                                      </td>
-                                      <td className="p-4 text-slate-400">{u.email}</td>
-                                      <td className="p-4">
-                                          <div className="font-bold text-green-400">${u.balance.toFixed(4)}</div>
-                                          <div className="text-[10px] text-slate-500">
-                                              ≈ {(u.balance * EXCHANGE_RATE).toLocaleString('vi-VN')}đ
-                                          </div>
-                                      </td>
-                                      <td className="p-4 text-slate-400">
-                                          {u.created_at ? new Date(u.created_at).toLocaleDateString('vi-VN') : 'N/A'}
-                                      </td>
-                                  </tr>
-                              ))
-                          )}
+                           {users.map(u => (
+                               <tr key={u.id} className="hover:bg-slate-800/30">
+                                   <td className="p-4">
+                                       <div className="font-bold text-white">{u.full_name || 'User'}</div>
+                                       <div className="text-xs text-slate-500">{u.email}</div>
+                                   </td>
+                                   <td className="p-4 font-bold text-green-400">${u.balance.toFixed(4)}</td>
+                                   <td className="p-4 text-slate-400">{new Date(u.created_at || '').toLocaleDateString()}</td>
+                               </tr>
+                           ))}
                       </tbody>
                   </table>
               </div>
@@ -309,23 +363,12 @@ const Admin: React.FC = () => {
           {activeTab === 'system' && (
               <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                      <div>
-                          <h3 className="text-white font-bold text-lg">Cấu hình Database</h3>
-                          <p className="text-slate-400 text-sm">Sao chép mã SQL bên dưới và chạy trong Supabase SQL Editor để khởi tạo bảng.</p>
-                      </div>
-                      <button 
-                        onClick={copySQL}
-                        className="flex items-center gap-2 bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-lg font-bold text-sm transition-colors"
-                      >
-                          {copied ? <Check size={18} /> : <Copy size={18} />}
-                          {copied ? 'Đã sao chép' : 'Sao chép SQL'}
-                      </button>
+                      <h3 className="text-white font-bold">SQL Setup</h3>
+                      <button onClick={copySQL} className="bg-brand-600 px-3 py-1 rounded text-sm text-white">Copy SQL</button>
                   </div>
-                  <div className="relative">
-                      <pre className="bg-slate-900 border border-slate-700 rounded-xl p-4 overflow-x-auto text-xs font-mono text-green-400 max-h-[500px] no-scrollbar">
-                          {SQL_SETUP_INSTRUCTION}
-                      </pre>
-                  </div>
+                  <pre className="bg-slate-900 p-4 rounded-xl text-xs text-green-400 overflow-x-auto max-h-[400px]">
+                      {SQL_SETUP_INSTRUCTION}
+                  </pre>
               </div>
           )}
       </div>

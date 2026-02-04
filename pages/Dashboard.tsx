@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { LinkItem, UserProfile } from '../types';
-import { Play, DollarSign, Wallet, RefreshCw, Plus, Clock, TrendingUp, Search, ShieldCheck, AlertCircle, ChevronRight, Briefcase } from 'lucide-react';
-import { SQL_SETUP_INSTRUCTION, EXCHANGE_RATE } from '../constants';
+import { Play, Wallet, RefreshCw, TrendingUp, Search, ShieldCheck, AlertCircle, ChevronRight, Briefcase, Info } from 'lucide-react';
+import { EXCHANGE_RATE } from '../constants';
 import { Link } from 'react-router-dom';
 
 const Dashboard: React.FC = () => {
@@ -11,7 +11,6 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSql, setShowSql] = useState(false);
-  const [activeTab, setActiveTab] = useState<'jobs' | 'history'>('jobs');
 
   const fetchData = useCallback(async () => {
     if (!supabase) return;
@@ -92,20 +91,20 @@ const Dashboard: React.FC = () => {
 
       {/* 2. MAIN CONTENT */}
       <div className="px-4 md:px-0">
-          {/* Tabs */}
-          <div className="flex gap-2 mb-6 bg-slate-900/50 p-1 rounded-xl w-fit">
-              <button 
-                  onClick={() => setActiveTab('jobs')}
-                  className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'jobs' ? 'bg-brand-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-              >
-                  Việc cần làm <span className="ml-1 bg-white/20 px-1.5 rounded-full text-[10px]">{tasks.length}</span>
-              </button>
-              <button 
-                  onClick={() => setActiveTab('history')}
-                  className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'history' ? 'bg-brand-600 text-white shadow-md' : 'text-slate-400 hover:text-white'}`}
-              >
-                  Đã hoàn thành
-              </button>
+          
+          {/* Guide Banner */}
+          <div className="mb-6 bg-gradient-to-r from-blue-900/40 to-slate-900/40 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3">
+              <div className="bg-blue-500/20 p-2 rounded-lg">
+                  <Info size={20} className="text-blue-400" />
+              </div>
+              <div>
+                  <h4 className="text-blue-100 font-bold text-sm mb-1">Hướng dẫn kiếm tiền</h4>
+                  <p className="text-slate-400 text-xs leading-relaxed">
+                      1. Chọn nhiệm vụ bên dưới và bấm "Làm ngay". <br/>
+                      2. Tìm từ khóa trên Google theo hướng dẫn. <br/>
+                      3. Lấy mã bảo mật tại trang đích và nhập vào hệ thống để nhận thưởng.
+                  </p>
+              </div>
           </div>
 
           {/* Controls */}
@@ -145,7 +144,8 @@ const Dashboard: React.FC = () => {
                          <ShieldCheck className="text-slate-500" size={32} />
                      </div>
                      <h3 className="text-white font-bold mb-2">Hết nhiệm vụ tạm thời</h3>
-                     <p className="text-slate-400 text-sm mb-6">Bạn đã làm rất tốt! Hãy quay lại sau ít phút để nhận thêm việc mới.</p>
+                     <p className="text-slate-400 text-sm mb-6">Bạn đã làm rất tốt! Hãy quay lại sau ít phút hoặc liên hệ Admin để thêm việc.</p>
+                     <button onClick={fetchData} className="text-brand-400 hover:text-brand-300 text-sm font-medium">Làm mới danh sách</button>
                  </div>
               ) : (
                   tasks.map((task) => (
@@ -168,7 +168,7 @@ const Dashboard: React.FC = () => {
                                   Tìm từ khóa: <span className="text-brand-400">"vay tien online"</span>
                               </h4>
                               <p className="text-slate-400 text-xs mt-1 truncate">
-                                  Trang đích: <span className="text-white">vaytien***.com</span> • Thời gian: ~45s
+                                  Trang đích: <span className="text-white">{task.original_url.replace(/^https?:\/\//, '')}</span> • Thời gian: ~45s
                               </p>
                           </div>
 

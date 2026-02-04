@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Wallet, User, LogOut, Zap, Bell, DollarSign, History, ShieldAlert } from 'lucide-react';
+import { Wallet, User, LogOut, Zap, Bell, DollarSign, History, ShieldAlert, Gift } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { APP_NAME, ADMIN_EMAIL } from '../constants';
 
@@ -32,6 +32,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   const navItems = [
     { icon: Zap, label: 'Kiếm tiền', path: '/dashboard' },
+    { icon: Gift, label: 'Giới thiệu', path: '/referral' },
     { icon: Wallet, label: 'Rút tiền', path: '/withdraw' }, 
     { icon: History, label: 'Lịch sử', path: '/history' }, 
     { icon: User, label: 'Tài khoản', path: '/account' }, 

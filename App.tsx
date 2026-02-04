@@ -12,6 +12,8 @@ import RedirectPage from './pages/RedirectPage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Admin from './pages/Admin';
+import Referral from './pages/Referral';
+import { SupabaseConfigModal } from './components/SupabaseConfigModal';
 
 function AppContent() {
   const [session, setSession] = useState<any>(null);
@@ -56,19 +58,18 @@ function AppContent() {
   // Logged in -> Use AppLayout (Social Media Style)
   if (session) {
     return (
-      <>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/withdraw" element={<Withdraw />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/account" element={<Account />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="*" element={<Navigate to="/dashboard" />} />
-          </Routes>
-        </AppLayout>
-      </>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/referral" element={<Referral />} />
+          <Route path="/withdraw" element={<Withdraw />} />
+          <Route path="/history" element={<History />} />
+          <Route path="/account" element={<Account />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+        </Routes>
+      </AppLayout>
     );
   }
 
@@ -89,6 +90,7 @@ function AppContent() {
 function App() {
   return (
     <Router>
+      <SupabaseConfigModal />
       <AppContent />
     </Router>
   );
