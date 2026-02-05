@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Wallet, User, LogOut, Zap, Bell, DollarSign, History, ShieldAlert, Gift } from 'lucide-react';
+import { Wallet, User, LogOut, Zap, Bell, History, ShieldAlert, Home, LayoutDashboard } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { APP_NAME, ADMIN_EMAIL } from '../constants';
 
@@ -30,9 +30,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     window.location.href = '/login';
   };
 
+  // Khôi phục về 4 mục cơ bản để giao diện gọn gàng
   const navItems = [
-    { icon: Zap, label: 'Kiếm tiền', path: '/dashboard' },
-    { icon: Gift, label: 'Giới thiệu', path: '/referral' },
+    { icon: Home, label: 'Trang chủ', path: '/dashboard' },
     { icon: Wallet, label: 'Rút tiền', path: '/withdraw' }, 
     { icon: History, label: 'Lịch sử', path: '/history' }, 
     { icon: User, label: 'Tài khoản', path: '/account' }, 
@@ -130,7 +130,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
       {/* Mobile Bottom Nav */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-social-card border-t border-slate-800 z-50 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
-        <div className="flex justify-around items-center h-16">
+        <div className="flex justify-between items-center h-16 px-2">
           {navItems.map((item, idx) => (
             <Link
               key={idx}
@@ -142,9 +142,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               }`}
             >
               <div className={`p-1 rounded-xl transition-all ${isActive(item.path) ? 'bg-brand-500/10' : ''}`}>
-                 <item.icon size={24} strokeWidth={isActive(item.path) ? 2.5 : 2} />
+                 <item.icon size={20} strokeWidth={isActive(item.path) ? 2.5 : 2} />
               </div>
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <span className="text-[10px] font-medium whitespace-nowrap">{item.label}</span>
             </Link>
           ))}
         </div>

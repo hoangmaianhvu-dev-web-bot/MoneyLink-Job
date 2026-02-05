@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { LinkItem, UserProfile } from '../types';
-import { Play, Wallet, RefreshCw, TrendingUp, Search, ShieldCheck, AlertCircle, ChevronRight, Briefcase, Info } from 'lucide-react';
+import { Play, Wallet, RefreshCw, TrendingUp, Search, ShieldCheck, AlertCircle, ChevronRight, Briefcase, Zap } from 'lucide-react';
 import { EXCHANGE_RATE } from '../constants';
 import { Link } from 'react-router-dom';
 
@@ -66,132 +66,159 @@ const Dashboard: React.FC = () => {
   }, [fetchData]);
 
   return (
-    <div className="px-0 md:px-6 py-4 space-y-6">
+    <div className="px-0 md:px-6 py-4 space-y-8 animate-fade-in">
       
-      {/* 1. WALLET HEADER (Compact & Modern) */}
+      {/* 1. LUXURY WALLET SECTION */}
       <div className="px-4 md:px-0">
-          <div className="bg-social-card border border-slate-800 rounded-2xl p-5 shadow-lg flex items-center justify-between relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-5">
-                  <Wallet size={100} />
+          <div className="relative w-full max-w-lg mx-auto md:max-w-none md:mx-0 overflow-hidden rounded-2xl shadow-2xl group transition-all duration-300 hover:shadow-brand-500/20">
+              {/* Background gradient simulating a premium card */}
+              <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#1e293b] to-black opacity-95"></div>
+              <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"></div>
+              
+              {/* Gold glow effects */}
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-gold-500/20 rounded-full blur-[80px]"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-brand-500/10 rounded-full blur-[60px]"></div>
+
+              <div className="relative p-6 md:p-8 flex flex-col justify-between h-full min-h-[220px]">
+                  <div className="flex justify-between items-start">
+                      <div>
+                          <p className="text-slate-400 text-xs font-medium tracking-[0.2em] uppercase mb-1">Total Balance</p>
+                          <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight drop-shadow-lg gold-gradient-text">
+                              ${profile?.balance?.toFixed(4) || '0.0000'}
+                          </h2>
+                      </div>
+                      <div className="w-12 h-8 rounded bg-gradient-to-r from-yellow-200 to-yellow-500 opacity-80 shadow-md flex items-center justify-center">
+                          <div className="w-8 h-5 border border-yellow-600 rounded-sm opacity-50"></div>
+                      </div>
+                  </div>
+
+                  <div className="mt-8 flex items-end justify-between">
+                      <div>
+                          <p className="text-slate-500 text-[10px] font-bold uppercase mb-1">Estimated Value</p>
+                          <p className="text-lg md:text-xl font-medium text-slate-300">
+                              ≈ {( (profile?.balance || 0) * EXCHANGE_RATE ).toLocaleString('vi-VN')} <span className="text-xs align-top">VND</span>
+                          </p>
+                      </div>
+                      
+                      <Link to="/withdraw" className="group relative px-6 py-3 bg-white text-black font-bold text-sm rounded-lg overflow-hidden transition-all hover:scale-105 active:scale-95 shadow-lg">
+                          <span className="relative z-10 flex items-center gap-2">Rút Tiền <TrendingUp size={16} /></span>
+                          <div className="absolute inset-0 bg-gradient-to-r from-slate-100 to-slate-300 group-hover:opacity-90"></div>
+                      </Link>
+                  </div>
               </div>
-              <div>
-                  <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-1">Số dư khả dụng</p>
-                  <h2 className="text-3xl font-bold text-white tracking-tight flex items-baseline gap-1">
-                      ${profile?.balance?.toFixed(4) || '0.0000'}
-                  </h2>
-                  <p className="text-sm font-medium text-slate-400 mt-1">
-                      ≈ {( (profile?.balance || 0) * EXCHANGE_RATE ).toLocaleString('vi-VN')}đ
-                  </p>
-              </div>
-              <Link to="/withdraw" className="bg-brand-600 hover:bg-brand-500 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-brand-500/20 z-10">
-                  Rút tiền ngay
-              </Link>
           </div>
       </div>
 
-      {/* 2. MAIN CONTENT */}
+      {/* 2. MAIN CONTENT AREA */}
       <div className="px-4 md:px-0">
           
-          {/* Guide Banner */}
-          <div className="mb-6 bg-gradient-to-r from-blue-900/40 to-slate-900/40 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3">
-              <div className="bg-blue-500/20 p-2 rounded-lg">
-                  <Info size={20} className="text-blue-400" />
-              </div>
-              <div>
-                  <h4 className="text-blue-100 font-bold text-sm mb-1">Hướng dẫn kiếm tiền</h4>
-                  <p className="text-slate-400 text-xs leading-relaxed">
-                      1. Chọn nhiệm vụ bên dưới và bấm "Làm ngay". <br/>
-                      2. Tìm từ khóa trên Google theo hướng dẫn. <br/>
-                      3. Lấy mã bảo mật tại trang đích và nhập vào hệ thống để nhận thưởng.
-                  </p>
-              </div>
+          {/* Status Bar */}
+          <div className="mb-6 flex flex-col md:flex-row gap-4">
+               <div className="flex-1 glass-panel rounded-xl p-4 flex items-center gap-4 border-l-4 border-brand-500">
+                  <div className="w-10 h-10 rounded-full bg-brand-500/20 flex items-center justify-center text-brand-400 shrink-0">
+                      <Zap size={20} />
+                  </div>
+                  <div>
+                      <h4 className="text-white font-bold text-sm">Nhiệm vụ mới mỗi ngày</h4>
+                      <p className="text-xs text-slate-400">Hệ thống tự động cập nhật việc làm sau 5-10 phút.</p>
+                  </div>
+               </div>
+               <div className="flex-1 glass-panel rounded-xl p-4 flex items-center gap-4 border-l-4 border-gold-500">
+                  <div className="w-10 h-10 rounded-full bg-gold-500/20 flex items-center justify-center text-gold-500 shrink-0">
+                      <TrendingUp size={20} />
+                  </div>
+                  <div>
+                      <h4 className="text-white font-bold text-sm">Tỉ giá cao nhất</h4>
+                      <p className="text-xs text-slate-400">1 USD = {EXCHANGE_RATE.toLocaleString('vi-VN')} VNĐ. Rút tiền 24/7.</p>
+                  </div>
+               </div>
           </div>
 
           {/* Controls */}
-          <div className="flex justify-between items-center mb-4">
-               <h3 className="font-bold text-white text-lg flex items-center gap-2">
-                   <Briefcase size={20} className="text-brand-500"/>
-                   Danh sách nhiệm vụ
+          <div className="flex justify-between items-center mb-6">
+               <h3 className="font-bold text-white text-xl flex items-center gap-2">
+                   <Briefcase size={22} className="text-brand-500"/>
+                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Danh Sách Nhiệm Vụ</span>
                </h3>
-               <div className="flex gap-2">
-                    <button onClick={fetchData} className="p-1.5 bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors">
-                        <RefreshCw size={18} />
-                    </button>
-               </div>
+               <button 
+                  onClick={fetchData} 
+                  className="group flex items-center gap-2 px-3 py-1.5 glass-panel rounded-lg text-slate-400 hover:text-white transition-all hover:bg-white/5"
+                >
+                   <RefreshCw size={16} className={`group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin' : ''}`} />
+                   <span className="text-xs font-medium">Làm mới</span>
+               </button>
           </div>
 
           {/* SQL Warning */}
           {showSql && (
-            <div className="mb-6 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4 flex gap-3">
-                <AlertCircle className="text-yellow-500 shrink-0" size={24} />
-                <div className="overflow-hidden">
-                    <h4 className="text-yellow-500 font-bold text-sm">Cấu hình Database</h4>
-                    <p className="text-slate-400 text-xs mt-1">Vui lòng chạy SQL script trong Supabase để tạo bảng.</p>
+            <div className="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex gap-3 animate-pulse">
+                <AlertCircle className="text-red-500 shrink-0" size={24} />
+                <div>
+                    <h4 className="text-red-500 font-bold text-sm">Lỗi Hệ Thống</h4>
+                    <p className="text-slate-400 text-xs mt-1">Cần thiết lập Database. Vui lòng liên hệ Admin.</p>
                 </div>
             </div>
           )}
 
-          {/* JOB LIST */}
-          <div className="space-y-3 pb-20">
+          {/* JOB LIST GRID */}
+          <div className="grid grid-cols-1 gap-4 pb-20">
               {loading ? (
-                 <div className="text-center py-10">
-                     <RefreshCw className="animate-spin mx-auto text-brand-500 mb-2" size={24}/>
-                     <p className="text-slate-500 text-sm">Đang tải việc...</p>
+                 <div className="text-center py-20 glass-panel rounded-2xl">
+                     <div className="relative w-16 h-16 mx-auto mb-4">
+                         <div className="absolute inset-0 border-4 border-brand-500/20 rounded-full"></div>
+                         <div className="absolute inset-0 border-4 border-brand-500 border-t-transparent rounded-full animate-spin"></div>
+                     </div>
+                     <p className="text-slate-400 text-sm animate-pulse">Đang đồng bộ dữ liệu...</p>
                  </div>
               ) : tasks.length === 0 ? (
-                 <div className="bg-social-card border border-slate-800 rounded-2xl p-8 text-center">
-                     <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                         <ShieldCheck className="text-slate-500" size={32} />
+                 <div className="glass-panel rounded-2xl p-10 text-center border-dashed border-2 border-slate-700">
+                     <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                         <ShieldCheck className="text-slate-500" size={40} />
                      </div>
-                     <h3 className="text-white font-bold mb-2">Hết nhiệm vụ tạm thời</h3>
-                     <p className="text-slate-400 text-sm mb-6">Bạn đã làm rất tốt! Hãy quay lại sau ít phút hoặc liên hệ Admin để thêm việc.</p>
-                     <button onClick={fetchData} className="text-brand-400 hover:text-brand-300 text-sm font-medium">Làm mới danh sách</button>
+                     <h3 className="text-white font-bold text-lg mb-2">Chưa có nhiệm vụ mới</h3>
+                     <p className="text-slate-400 text-sm mb-6 max-w-sm mx-auto leading-relaxed">
+                         Bạn đã hoàn thành xuất sắc tất cả công việc hiện tại. Hãy quay lại sau ít phút để nhận thêm việc nhé!
+                     </p>
+                     <button onClick={fetchData} className="px-6 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-medium text-sm transition-all shadow-lg shadow-brand-500/20">
+                         Kiểm tra lại
+                     </button>
                  </div>
               ) : (
                   tasks.map((task) => (
-                      <div key={task.id} className="bg-social-card hover:bg-[#2a2b2c] border border-slate-800 rounded-2xl p-4 transition-all flex flex-col md:flex-row gap-4 items-start md:items-center group relative overflow-hidden">
-                          {/* Left Accent Line */}
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand-500"></div>
+                    <div key={task.id} className="glass-panel p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-5 hover:border-brand-500/50 transition-all duration-300 group relative overflow-hidden">
+                        {/* Hover Glow */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-                          {/* Icon */}
-                          <div className="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center shrink-0 border border-slate-700 group-hover:border-brand-500/50 transition-colors">
-                              <Search className="text-white" size={24} />
-                          </div>
+                        <div className="flex items-center gap-5 w-full sm:w-auto">
+                            <div className="w-14 h-14 bg-gradient-to-br from-brand-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20 text-white shrink-0">
+                                <Search size={24} />
+                            </div>
+                            <div>
+                                <h4 className="text-white font-bold text-lg group-hover:text-brand-400 transition-colors">Google Search</h4>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                    <span className="text-xs text-slate-400 bg-slate-800 px-2 py-0.5 rounded border border-slate-700">
+                                        ID: {task.slug.substring(0,8)}...
+                                    </span>
+                                    <span className="text-xs text-green-400 bg-green-900/20 px-2 py-0.5 rounded border border-green-900/30 flex items-center gap-1">
+                                        <ShieldCheck size={10} /> Uy tín
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
 
-                          {/* Content */}
-                          <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                  <span className="bg-blue-500/10 text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase border border-blue-500/20">Google Search</span>
-                                  <span className="text-slate-500 text-xs">• ID: {task.slug.toUpperCase()}</span>
-                              </div>
-                              <h4 className="text-white font-bold text-base truncate pr-4">
-                                  Tìm từ khóa: <span className="text-brand-400">"vay tien online"</span>
-                              </h4>
-                              <p className="text-slate-400 text-xs mt-1 truncate">
-                                  Trang đích: <span className="text-white">{task.original_url.replace(/^https?:\/\//, '')}</span> • Thời gian: ~45s
-                              </p>
-                          </div>
-
-                          {/* Reward & Action */}
-                          <div className="flex items-center justify-between w-full md:w-auto md:flex-col md:items-end gap-3 mt-2 md:mt-0 pl-14 md:pl-0">
-                              <div className="text-right">
-                                  <span className="text-green-400 font-extrabold text-lg flex items-center justify-end">
-                                      +${task.reward_amount?.toFixed(4) || '0.0000'}
-                                  </span>
-                                  <span className="text-xs text-slate-500 font-medium block">
-                                      ≈ {(task.reward_amount * EXCHANGE_RATE).toLocaleString('vi-VN')}đ
-                                  </span>
-                              </div>
-                              <a 
-                                  href={`#/v/${task.slug}`} 
-                                  target="_blank" 
-                                  rel="noreferrer"
-                                  className="bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold px-6 py-2 rounded-lg shadow-lg shadow-brand-500/20 flex items-center gap-1 hover:gap-2 transition-all"
-                              >
-                                  Làm ngay <ChevronRight size={16} />
-                              </a>
-                          </div>
-                      </div>
+                        <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-slate-800 pt-4 sm:pt-0 mt-2 sm:mt-0">
+                            <div className="text-right">
+                                <p className="text-xs text-slate-500 font-bold uppercase">Thù lao</p>
+                                <p className="text-xl font-bold text-green-400 drop-shadow-sm">+${task.reward_amount}</p>
+                            </div>
+                            <Link 
+                                to={`/v/${task.slug}`} 
+                                className="px-6 py-3 bg-white text-slate-900 font-bold rounded-xl hover:bg-brand-50 transition-all flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                            >
+                                Thực hiện <Play size={16} fill="currentColor" />
+                            </Link>
+                        </div>
+                    </div>
                   ))
               )}
           </div>

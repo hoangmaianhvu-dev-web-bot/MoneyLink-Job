@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { Loader2, CheckCircle, Search, Copy, Globe, AlertTriangle, Key, LogIn, ArrowLeft } from 'lucide-react';
+import { Loader2, CheckCircle, Search, Copy, Globe, AlertTriangle, Key, LogIn, ArrowLeft, Clock } from 'lucide-react';
 import { EXCHANGE_RATE } from '../constants';
 
 const RedirectPage: React.FC = () => {
@@ -13,7 +13,6 @@ const RedirectPage: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [isAuthError, setIsAuthError] = useState(false);
   
-  // Steps: 1=Intro/Search, 2=Wait/OnSite, 3=EnterCode/Success
   const [step, setStep] = useState(1); 
   const [countdown, setCountdown] = useState(60); 
   const [claiming, setClaiming] = useState(false);
@@ -74,14 +73,11 @@ const RedirectPage: React.FC = () => {
     checkLink();
   }, [slug]);
 
-  // Timer logic for "Getting Code" simulation
   useEffect(() => {
     if (step === 2 && countdown > 0) {
       const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
       return () => clearTimeout(timer);
     } else if (step === 2 && countdown === 0) {
-      // Khi hết giờ, giả vờ hiện mã code
-      // Tạo mã code ngẫu nhiên để tăng tính thực tế
       setFakeCode(`MNL-${Math.floor(10000 + Math.random() * 90000)}`);
     }
   }, [step, countdown]);
@@ -92,8 +88,8 @@ const RedirectPage: React.FC = () => {
 
   const handleOpenGoogle = () => {
       window.open('https://google.com', '_blank');
-      setStep(2); // Chuyển sang màn hình chờ nhập mã
-      setCountdown(45); // Set time thực tế hơn (45s)
+      setStep(2); 
+      setCountdown(45); 
   };
 
   const handleClaimReward = async () => {
@@ -108,7 +104,7 @@ const RedirectPage: React.FC = () => {
           const { error } = await supabase!.rpc('complete_task', { link_id: linkData.id });
           if (error) throw error;
           
-          setStep(3); // Success
+          setStep(3); 
           setTimeout(() => {
               navigate('/dashboard');
           }, 3000);
@@ -120,20 +116,20 @@ const RedirectPage: React.FC = () => {
   };
 
   if (loading) return (
-      <div className="min-h-screen bg-[#121212] flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-[#0B0F19] flex flex-col items-center justify-center gap-4">
           <Loader2 className="animate-spin text-brand-500" size={40} />
-          <p className="text-slate-500 text-sm">Đang tải nhiệm vụ...</p>
+          <p className="text-slate-500 text-sm">Đang tải dữ liệu...</p>
       </div>
   );
 
   if (errorMsg) return (
-      <div className="min-h-screen bg-[#121212] flex items-center justify-center p-4">
-          <div className="bg-[#242526] p-8 rounded-2xl border border-slate-800 text-center max-w-sm w-full shadow-2xl">
-              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center p-4">
+          <div className="glass-panel p-8 rounded-2xl text-center max-w-sm w-full shadow-2xl border-red-500/20">
+              <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
                   <AlertTriangle className="text-red-500" size={32}/>
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Thông báo</h3>
-              <p className="text-slate-400 mb-6 leading-relaxed">{errorMsg}</p>
+              <p className="text-slate-400 mb-6 leading-relaxed text-sm">{errorMsg}</p>
               
               <div className="space-y-3">
                   {isAuthError ? (
@@ -151,68 +147,69 @@ const RedirectPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#121212] font-sans text-slate-200 flex flex-col">
-      {/* Header Task Info */}
-      <div className="bg-[#1e1e1e] border-b border-slate-800 p-4 sticky top-0 z-50 shadow-lg">
+    <div className="min-h-screen bg-[#0B0F19] font-sans text-slate-200 flex flex-col relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-500 to-purple-500 z-50"></div>
+      <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-brand-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+
+      {/* Header */}
+      <div className="glass-panel border-b border-slate-800 p-4 sticky top-0 z-40 shadow-xl backdrop-blur-md">
           <div className="max-w-md mx-auto flex justify-between items-center">
               <div>
-                  <p className="text-[10px] text-slate-500 uppercase font-extrabold tracking-wider">NHIỆM VỤ TỪ KHÓA</p>
+                  <p className="text-[10px] text-brand-400 uppercase font-extrabold tracking-wider mb-0.5">NHIỆM VỤ TỪ KHÓA</p>
                   <p className="text-white font-bold flex items-center gap-2 text-sm">
-                      <Search size={14} className="text-brand-400"/> Google Search
+                      <Search size={14} className="text-slate-400"/> Google Search
                   </p>
               </div>
               <div className="text-right">
-                  <p className="text-[10px] text-slate-500 uppercase font-extrabold tracking-wider">TIỀN THƯỞNG</p>
-                  <p className="text-green-400 font-bold text-lg leading-none">+${linkData?.reward_amount}</p>
+                  <p className="text-[10px] text-slate-500 uppercase font-extrabold tracking-wider mb-0.5">TIỀN THƯỞNG</p>
+                  <p className="text-green-400 font-bold text-lg leading-none drop-shadow-sm">+${linkData?.reward_amount}</p>
               </div>
           </div>
       </div>
 
-      <main className="flex-1 max-w-md mx-auto w-full p-4 space-y-6 flex flex-col justify-center">
+      <main className="flex-1 max-w-md mx-auto w-full p-4 space-y-6 flex flex-col justify-center relative z-10">
         
         {/* STEP 1: INSTRUCTION & ACTION */}
         {step === 1 && (
             <div className="space-y-5 animate-fade-in">
-                <div className="bg-[#242526] border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-brand-500/10 rounded-bl-full -mr-4 -mt-4"></div>
-                    <h2 className="text-xl font-bold text-white mb-4 relative z-10">Hướng dẫn thực hiện</h2>
+                <div className="glass-panel rounded-2xl p-6 relative overflow-hidden border border-slate-700/50">
+                    <h2 className="text-xl font-bold text-white mb-6 relative z-10 text-center">Quy trình thực hiện</h2>
                     
-                    <div className="space-y-4 relative z-10">
-                        <div className="flex gap-4">
-                            <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-brand-500 shrink-0">1</div>
-                            <div>
-                                <h3 className="text-white font-bold text-sm">Truy cập Google.com</h3>
-                                <p className="text-xs text-slate-400">Mở tab mới hoặc ứng dụng Google.</p>
+                    <div className="space-y-6 relative z-10">
+                        {/* Step Item */}
+                        <div className="flex gap-4 items-start group">
+                            <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/50 flex items-center justify-center font-bold text-brand-400 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.2)]">1</div>
+                            <div className="flex-1">
+                                <h3 className="text-white font-bold text-sm mb-1">Truy cập Google</h3>
+                                <p className="text-xs text-slate-400">Mở Google.com trên trình duyệt hoặc ứng dụng.</p>
                             </div>
                         </div>
 
-                        <div className="flex gap-4">
-                            <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-brand-500 shrink-0">2</div>
+                        <div className="flex gap-4 items-start group">
+                            <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/50 flex items-center justify-center font-bold text-brand-400 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.2)]">2</div>
                             <div className="flex-1 min-w-0">
-                                <h3 className="text-white font-bold text-sm mb-1">Tìm từ khóa</h3>
-                                <div className="bg-black border border-dashed border-slate-600 rounded-lg p-3 flex justify-between items-center group cursor-pointer" onClick={() => handleCopy("vay tien online uy tin")}>
-                                    <code className="text-yellow-400 font-mono font-bold text-base truncate">vay tien online uy tin</code>
-                                    <Copy size={16} className="text-slate-500 group-hover:text-white transition-colors" />
+                                <h3 className="text-white font-bold text-sm mb-2">Tìm từ khóa này</h3>
+                                <div 
+                                    className="bg-black/60 border border-dashed border-brand-500/50 rounded-xl p-3 flex justify-between items-center group cursor-pointer hover:bg-black/80 transition-colors" 
+                                    onClick={() => handleCopy("vay tien online uy tin")}
+                                >
+                                    <code className="text-yellow-400 font-mono font-bold text-base truncate select-all">vay tien online uy tin</code>
+                                    <div className="bg-slate-800 p-1.5 rounded-lg text-slate-400 group-hover:text-white group-hover:bg-brand-600 transition-all">
+                                        <Copy size={14} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-4">
-                            <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-brand-500 shrink-0">3</div>
-                            <div>
-                                <h3 className="text-white font-bold text-sm">Vào trang đích</h3>
-                                <p className="text-xs text-slate-400 mb-1">Tìm kết quả có tên miền:</p>
-                                <div className="bg-slate-800 px-3 py-1.5 rounded text-white font-bold text-sm inline-flex items-center gap-2 border border-slate-700">
-                                    <Globe size={14} className="text-blue-400"/> {linkData?.original_url ? new URL(linkData.original_url).hostname : 'vaytien***.com'}
+                        <div className="flex gap-4 items-start group">
+                            <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/50 flex items-center justify-center font-bold text-brand-400 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.2)]">3</div>
+                            <div className="flex-1">
+                                <h3 className="text-white font-bold text-sm mb-2">Tìm trang đích</h3>
+                                <div className="bg-slate-800/80 px-4 py-3 rounded-xl border border-slate-700 flex items-center gap-3">
+                                    <Globe size={18} className="text-blue-400 shrink-0"/> 
+                                    <span className="text-white font-semibold text-sm truncate">{linkData?.original_url ? new URL(linkData.original_url).hostname : 'vaytien***.com'}</span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <div className="flex gap-4">
-                            <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-brand-500 shrink-0">4</div>
-                            <div>
-                                <h3 className="text-white font-bold text-sm">Lấy mã & Nhập vào đây</h3>
-                                <p className="text-xs text-slate-400">Cuộn xuống cuối trang, đợi thời gian đếm ngược để lấy mã.</p>
                             </div>
                         </div>
                     </div>
@@ -220,9 +217,9 @@ const RedirectPage: React.FC = () => {
 
                 <button 
                     onClick={handleOpenGoogle}
-                    className="w-full bg-gradient-to-r from-brand-600 to-blue-600 hover:from-brand-500 hover:to-blue-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-brand-500/20 text-lg flex justify-center items-center gap-2 animate-pulse"
+                    className="w-full bg-gradient-to-r from-brand-600 to-blue-600 hover:from-brand-500 hover:to-blue-500 text-white font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] text-lg flex justify-center items-center gap-3 transition-transform hover:scale-[1.02] active:scale-[0.98]"
                 >
-                    <Search size={20} /> Làm nhiệm vụ ngay
+                    <Search size={20} /> Bắt đầu làm nhiệm vụ
                 </button>
             </div>
         )}
@@ -230,21 +227,24 @@ const RedirectPage: React.FC = () => {
         {/* STEP 2: WAITING FOR CODE */}
         {step === 2 && (
             <div className="space-y-6 pt-4 text-center animate-fade-in">
-                <div className="bg-[#242526] border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                <div className="glass-panel rounded-2xl p-6 relative overflow-hidden border border-slate-700/50">
                     {fakeCode ? (
-                        <div className="animate-fade-in-up">
-                            <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500 border border-green-500/20">
-                                <Key size={32} />
+                        <div className="animate-slide-up">
+                            <div className="w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-green-500 border border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
+                                <Key size={40} />
                             </div>
-                            <h3 className="text-white font-bold text-xl mb-4">Đã tìm thấy mã!</h3>
+                            <h3 className="text-white font-bold text-2xl mb-2">Đã tìm thấy mã!</h3>
+                            <p className="text-slate-400 text-sm mb-6">Mã bảo mật đã xuất hiện trên trang đích.</p>
                             
-                            <div className="bg-black/40 p-5 rounded-xl border border-slate-700 text-left">
+                            <div className="bg-black/40 p-6 rounded-2xl border border-slate-700 text-left mb-6">
                                 <div className="mb-6">
-                                    <p className="text-slate-400 text-[10px] font-bold uppercase mb-2">Mã bảo mật (Giả lập cho Demo):</p>
-                                    <div className="text-center text-2xl font-mono text-green-400 font-bold tracking-widest bg-black p-3 rounded-lg border border-green-500/30 select-all cursor-pointer" onClick={() => handleCopy(fakeCode)}>
+                                    <p className="text-slate-500 text-[10px] font-bold uppercase mb-2 tracking-wider">MÃ BẢO MẬT (DEMO)</p>
+                                    <div 
+                                        className="text-center text-3xl font-mono text-green-400 font-bold tracking-widest bg-black p-4 rounded-xl border border-green-500/30 select-all cursor-pointer hover:border-green-500 transition-colors" 
+                                        onClick={() => handleCopy(fakeCode)}
+                                    >
                                         {fakeCode}
                                     </div>
-                                    <p className="text-center text-[10px] text-slate-600 mt-1 italic">(Trong thực tế, mã này nằm ở web đích)</p>
                                 </div>
                                 
                                 <p className="text-white text-sm font-bold mb-2">Nhập mã xác nhận:</p>
@@ -252,14 +252,14 @@ const RedirectPage: React.FC = () => {
                                     type="text" 
                                     value={inputCode}
                                     onChange={(e) => setInputCode(e.target.value)}
-                                    className="w-full bg-slate-900 border border-slate-600 rounded-lg px-4 py-3 text-white focus:border-brand-500 outline-none mb-4 font-mono text-lg text-center tracking-widest uppercase placeholder-slate-700"
+                                    className="w-full bg-slate-900 border border-slate-600 rounded-xl px-4 py-4 text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none mb-4 font-mono text-xl text-center tracking-widest uppercase placeholder-slate-700"
                                     placeholder="MNL-XXXXX"
                                 />
                                 
                                 <button 
                                     onClick={handleClaimReward}
                                     disabled={claiming || !inputCode}
-                                    className="w-full bg-green-600 hover:bg-green-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
+                                    className="w-full bg-green-600 hover:bg-green-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
                                 >
                                     {claiming ? <Loader2 className="animate-spin" /> : <>Xác nhận & Nhận tiền</>}
                                 </button>
@@ -267,21 +267,34 @@ const RedirectPage: React.FC = () => {
                         </div>
                     ) : (
                         <div>
-                             <div className="relative w-32 h-32 mx-auto mb-8 flex items-center justify-center">
+                             <div className="relative w-40 h-40 mx-auto mb-8 flex items-center justify-center">
+                                {/* SVG Timer Ring */}
                                 <svg className="w-full h-full transform -rotate-90">
-                                    <circle cx="64" cy="64" r="60" stroke="#333" strokeWidth="8" fill="none" />
-                                    <circle cx="64" cy="64" r="60" stroke="#0ea5e9" strokeWidth="8" fill="none" 
-                                        strokeDasharray={377} strokeDashoffset={377 - (377 * countdown) / 45} className="transition-all duration-1000 linear" />
+                                    <circle cx="80" cy="80" r="70" stroke="#1f2937" strokeWidth="8" fill="none" />
+                                    <circle 
+                                        cx="80" cy="80" r="70" 
+                                        stroke="#3b82f6" 
+                                        strokeWidth="8" 
+                                        fill="none" 
+                                        strokeLinecap="round"
+                                        strokeDasharray={440} 
+                                        strokeDashoffset={440 - (440 * countdown) / 45} 
+                                        className="transition-all duration-1000 linear drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]" 
+                                    />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-3xl font-bold text-white">{countdown}s</span>
-                                    <span className="text-[10px] text-slate-400 uppercase font-bold">Waiting</span>
+                                    <span className="text-4xl font-bold text-white tracking-tighter">{countdown}</span>
+                                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-1">GIÂY</span>
                                 </div>
                             </div>
-                            <h3 className="text-white font-bold text-lg mb-2">Đang tìm mã bảo mật...</h3>
-                            <div className="flex items-start gap-2 text-left bg-blue-500/10 p-3 rounded-lg border border-blue-500/20">
-                                <AlertTriangle size={16} className="text-blue-400 shrink-0 mt-0.5" />
-                                <p className="text-blue-200 text-xs">Vui lòng giữ tab này mở và quay lại sau khi lấy được mã từ trang đích.</p>
+                            
+                            <h3 className="text-white font-bold text-xl mb-3">Đang đợi mã xuất hiện...</h3>
+                            <div className="flex items-start gap-3 text-left bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
+                                <Clock size={20} className="text-blue-400 shrink-0 mt-0.5 animate-pulse" />
+                                <div>
+                                    <p className="text-blue-200 text-sm font-bold mb-1">Vui lòng chờ trên trang đích</p>
+                                    <p className="text-slate-400 text-xs">Hệ thống đang kiểm tra thời gian lưu trú của bạn. Đừng đóng tab Google nhé!</p>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -292,16 +305,24 @@ const RedirectPage: React.FC = () => {
         {/* STEP 3: SUCCESS */}
         {step === 3 && (
             <div className="flex flex-col items-center justify-center py-10 animate-fade-in-up">
-                <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(34,197,94,0.5)] mb-6 animate-bounce">
-                    <CheckCircle size={48} className="text-white" />
+                <div className="relative mb-8">
+                    <div className="absolute inset-0 bg-green-500 rounded-full blur-[30px] opacity-40"></div>
+                    <div className="w-24 h-24 bg-gradient-to-tr from-green-500 to-emerald-400 rounded-full flex items-center justify-center shadow-2xl relative z-10 animate-bounce">
+                        <CheckCircle size={48} className="text-white" />
+                    </div>
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-2">Hoàn thành!</h2>
-                <div className="text-center mb-8 bg-slate-800/50 p-6 rounded-2xl border border-slate-700 w-full">
-                    <p className="text-slate-400 text-sm mb-1">Bạn nhận được</p>
-                    <p className="text-green-400 text-4xl font-extrabold mb-2">+${linkData?.reward_amount}</p>
-                    <p className="text-slate-500 text-sm font-medium">≈ {(linkData?.reward_amount * EXCHANGE_RATE).toLocaleString('vi-VN')}đ</p>
+                
+                <h2 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Tuyệt vời!</h2>
+                <p className="text-slate-400 text-sm mb-8">Tiền thưởng đã được cộng vào ví.</p>
+                
+                <div className="text-center mb-8 bg-slate-800/50 p-8 rounded-3xl border border-slate-700 w-full relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                    <p className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-2">Số tiền nhận được</p>
+                    <p className="text-green-400 text-5xl font-extrabold mb-2 drop-shadow-[0_0_15px_rgba(74,222,128,0.3)]">+${linkData?.reward_amount}</p>
+                    <p className="text-slate-400 text-sm font-medium">≈ {(linkData?.reward_amount * EXCHANGE_RATE).toLocaleString('vi-VN')}đ</p>
                 </div>
-                <div className="flex items-center gap-2 text-slate-500 text-sm">
+                
+                <div className="flex items-center gap-2 text-brand-400 text-sm font-medium bg-brand-500/10 px-4 py-2 rounded-full border border-brand-500/20">
                     <Loader2 size={16} className="animate-spin" />
                     Đang chuyển hướng về Dashboard...
                 </div>
