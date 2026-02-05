@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>MoneyLink - Social Earning</title>
-    <!-- Sử dụng Base64 cho Favicon để tránh lỗi 404 và lỗi cú pháp URL -->
     <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzBlYTVlOSIvPjx0ZXh0IHg9IjUwIiB5PSI3MCIgZm9udC1zaXplPSI2MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iYm9sZCI+JDwvdGV4dD48L3N2Zz4=" />
+    
+    <!-- CSS Framework & Fonts -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -19,11 +20,11 @@
                 500: '#0ea5e9',
                 600: '#0284c7',
                 900: '#0c4a6e',
-                DEFAULT: '#2D88FF', // Facebook/Messenger Blue vibe
+                DEFAULT: '#2D88FF', 
               },
               social: {
-                bg: '#18191a', // Facebook Dark BG
-                card: '#242526', // Facebook Dark Card
+                bg: '#18191a', 
+                card: '#242526', 
                 hover: '#3a3b3c',
                 text: '#e4e6eb',
                 subtext: '#b0b3b8',
@@ -37,6 +38,7 @@
       }
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
       body { 
         font-family: 'Inter', sans-serif; 
@@ -44,30 +46,38 @@
         color: #e4e6eb;
         -webkit-font-smoothing: antialiased;
       }
-      /* Hide scrollbar for Chrome, Safari and Opera */
-      .no-scrollbar::-webkit-scrollbar {
-          display: none;
-      }
-      /* Hide scrollbar for IE, Edge and Firefox */
-      .no-scrollbar {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-      }
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
-  <script type="importmap">
+
+    <!-- 1. Load UMD Globals (Single Source of Truth) -->
+    <!-- React Core -->
+    <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    <!-- Supabase Client -->
+    <script crossorigin src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
+    <!-- Babel for compiling TSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- 2. Map Imports to Globals via Data URIs -->
+    <script type="importmap">
 {
   "imports": {
-    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
-    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "react": "https://esm.sh/react@^19.2.4",
+    "react": "data:text/javascript;charset=utf-8,export%20default%20window.React%3Bexport%20const%20%7BuseState%2CuseEffect%2CuseContext%2CuseReducer%2CuseCallback%2CuseMemo%2CuseRef%2CuseImperativeHandle%2CuseLayoutEffect%2CuseDebugValue%2CuseDeferredValue%2CuseTransition%2CuseId%2Clazy%2CSuspense%2Cmemo%2CforwardRef%2CFragment%2CcreateContext%2CChildren%2CcloneElement%2CcreateElement%2CisValidElement%2CComponent%2CPureComponent%2CStrictMode%7D%3Dwindow.React%3B",
+    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime?external=react",
+    "react-dom": "data:text/javascript;charset=utf-8,export%20default%20window.ReactDOM%3B",
+    "react-dom/client": "data:text/javascript;charset=utf-8,export%20default%20window.ReactDOM%3Bexport%20const%20%7BcreateRoot%2ChydrateRoot%7D%3Dwindow.ReactDOM%3B",
+    "@supabase/supabase-js": "data:text/javascript;charset=utf-8,export%20const%20%7BcreateClient%7D%3Dwindow.supabase%3B",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?external=react,react-dom",
+    "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react,react-dom",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.93.3"
+    "react/": "https://esm.sh/react@^19.2.4/"
   }
 }
 </script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
+    <script type="text/babel" data-type="module" src="./index.tsx"></script>
   </body>
 </html>

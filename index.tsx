@@ -8,6 +8,4 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
-root.render(
-    <App />
-);
+root.render(<App />);
