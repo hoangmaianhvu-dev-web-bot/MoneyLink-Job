@@ -62,6 +62,7 @@ function AppContent() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/tasks" element={<Dashboard />} />
           <Route path="/referral" element={<Referral />} />
           <Route path="/withdraw" element={<Withdraw />} />
           <Route path="/history" element={<History />} />

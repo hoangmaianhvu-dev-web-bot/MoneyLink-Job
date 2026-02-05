@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../supabaseClient';
 import { LinkItem, UserProfile } from '../types';
-import { Play, Wallet, RefreshCw, TrendingUp, Search, ShieldCheck, AlertCircle, ChevronRight, Briefcase, Zap } from 'lucide-react';
+import { Play, RefreshCw, TrendingUp, Search, ShieldCheck, AlertCircle, Briefcase, Zap } from 'lucide-react';
 import { EXCHANGE_RATE } from '../constants';
 import { Link } from 'react-router-dom';
 
@@ -49,6 +49,9 @@ const Dashboard: React.FC = () => {
 
       if (linksError) throw linksError;
 
+      // Filter tasks: Don't show completed ones. 
+      // Note: In a real app, you might not want to see your OWN links as tasks to earn money, 
+      // but for testing we just filter completed ones.
       const availableTasks = (linksData || []).filter(link => !completedIds.includes(link.id));
       setTasks(availableTasks);
       setError(null);
@@ -66,7 +69,7 @@ const Dashboard: React.FC = () => {
   }, [fetchData]);
 
   return (
-    <div className="px-0 md:px-6 py-4 space-y-6 animate-fade-in">
+    <div className="px-0 md:px-6 py-4 space-y-6 animate-fade-in relative">
       
       {/* 1. LUXURY WALLET SECTION - 16:9 COMPACT CARD */}
       <div className="px-4 md:px-0">
@@ -140,13 +143,15 @@ const Dashboard: React.FC = () => {
                    <Briefcase size={18} className="text-brand-500"/>
                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Danh Sách Nhiệm Vụ</span>
                </h3>
-               <button 
-                  onClick={fetchData} 
-                  className="group flex items-center gap-2 px-3 py-1.5 glass-panel rounded-lg text-slate-400 hover:text-white transition-all hover:bg-white/5"
-                >
-                   <RefreshCw size={14} className={`group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin' : ''}`} />
-                   <span className="text-[10px] font-medium">Làm mới</span>
-               </button>
+               <div className="flex gap-2">
+                   <button 
+                      onClick={fetchData} 
+                      className="group flex items-center gap-2 px-3 py-1.5 glass-panel rounded-lg text-slate-400 hover:text-white transition-all hover:bg-white/5"
+                    >
+                       <RefreshCw size={14} className={`group-hover:rotate-180 transition-transform duration-500 ${loading ? 'animate-spin' : ''}`} />
+                       <span className="text-[10px] font-medium">Làm mới</span>
+                   </button>
+               </div>
           </div>
 
           {/* SQL Warning */}

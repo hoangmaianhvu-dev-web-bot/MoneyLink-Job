@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Wallet, User, LogOut, Zap, Bell, History, ShieldAlert, Home } from 'lucide-react';
+import { Wallet, User, LogOut, Zap, Bell, History, ShieldAlert, Home, Briefcase } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { APP_NAME, ADMIN_EMAIL } from '../constants';
 
@@ -31,9 +31,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     window.location.href = '/login';
   };
 
-  // 4 mục cơ bản
+  // 5 mục cơ bản
   const navItems = [
     { icon: Home, label: 'Trang chủ', path: '/dashboard' },
+    { icon: Briefcase, label: 'Nhiệm vụ', path: '/tasks' },
     { icon: Wallet, label: 'Rút tiền', path: '/withdraw' }, 
     { icon: History, label: 'Lịch sử', path: '/history' }, 
     { icon: User, label: 'Tài khoản', path: '/account' }, 
@@ -130,7 +131,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
       </main>
 
-      {/* Mobile Bottom Nav - Only show basic 4 items */}
+      {/* Mobile Bottom Nav */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-social-card border-t border-slate-800 z-50 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
         <div className="flex justify-between items-center h-16 px-2">
           {navItems.map((item, idx) => (
