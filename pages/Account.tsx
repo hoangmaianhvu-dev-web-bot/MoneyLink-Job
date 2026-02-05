@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../supabaseClient';
 import { UserProfile } from '../types';
-import { User, Mail, LogOut, Shield, ChevronRight, Gift, HelpCircle, Edit2, X, Save, Lock, AlertCircle, CheckCircle, Copy, ExternalLink, MessageCircle } from 'lucide-react';
+import { User, Mail, LogOut, Shield, ChevronRight, Gift, HelpCircle, Edit2, X, Save, Lock, AlertCircle, CheckCircle, ExternalLink, MessageCircle } from 'lucide-react';
 import { EXCHANGE_RATE } from '../constants';
+import { useNavigate } from 'react-router-dom';
 
 const Account: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isReferralOpen, setIsReferralOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   
   const [editName, setEditName] = useState('');
   const [notification, setNotification] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchProfile();
@@ -76,18 +78,10 @@ const Account: React.FC = () => {
       }
   };
 
-  const handleCopy = (text: string) => {
-      navigator.clipboard.writeText(text);
-      setNotification({ type: 'success', text: 'Đã sao chép vào bộ nhớ tạm!' });
-  };
-
   const handleLogout = async () => {
     await supabase!.auth.signOut();
     window.location.href = '/login';
   };
-
-  // Referral Link Generation
-  const referralLink = profile ? `${window.location.origin}/#/register?ref=${profile.id}` : 'Đang tải...';
 
   return (
     <div className="px-4 md:px-6 py-6 space-y-6 relative">
@@ -144,61 +138,6 @@ const Account: React.FC = () => {
                            {loading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> : <><Save size={18} /> Lưu thay đổi</>}
                        </button>
                    </form>
-               </div>
-           </div>
-       )}
-
-       {/* Referral Modal */}
-       {isReferralOpen && (
-           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-               <div className="bg-social-card border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-in">
-                   <div className="p-4 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
-                       <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                           <Gift size={18} className="text-green-500" /> Giới thiệu bạn bè
-                       </h3>
-                       <button onClick={() => setIsReferralOpen(false)} className="text-slate-400 hover:text-white">
-                           <X size={20} />
-                       </button>
-                   </div>
-                   <div className="p-6 space-y-4">
-                       <div className="text-center">
-                           <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                               <Gift size={32} className="text-green-500" />
-                           </div>
-                           <h4 className="text-white font-bold text-lg">Mời bạn bè, nhận thưởng lớn</h4>
-                           <p className="text-slate-400 text-sm mt-1">Nhận ngay <span className="text-green-400 font-bold">10% hoa hồng</span> từ thu nhập trọn đời của mỗi thành viên bạn giới thiệu.</p>
-                       </div>
-
-                       <div>
-                           <label className="block text-sm font-bold text-slate-300 mb-2">Link giới thiệu của bạn</label>
-                           <div className="flex gap-2">
-                               <input 
-                                    type="text"
-                                    value={referralLink}
-                                    readOnly
-                                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-300 focus:outline-none"
-                               />
-                               <button 
-                                onClick={() => handleCopy(referralLink)}
-                                className="bg-slate-700 hover:bg-slate-600 text-white p-3 rounded-xl border border-slate-600 transition-colors"
-                                title="Sao chép"
-                               >
-                                   <Copy size={20} />
-                               </button>
-                           </div>
-                       </div>
-                       
-                       <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-800 flex justify-between items-center">
-                           <div>
-                               <p className="text-xs text-slate-500 font-bold uppercase">Đã giới thiệu</p>
-                               <p className="text-white font-bold text-lg">0 thành viên</p>
-                           </div>
-                           <div className="text-right">
-                               <p className="text-xs text-slate-500 font-bold uppercase">Hoa hồng</p>
-                               <p className="text-green-400 font-bold text-lg">$0.00</p>
-                           </div>
-                       </div>
-                   </div>
                </div>
            </div>
        )}
@@ -333,7 +272,8 @@ const Account: React.FC = () => {
                <ChevronRight size={18} className="text-slate-600 group-hover:text-white" />
            </button>
 
-           <button onClick={() => setIsReferralOpen(true)} className="w-full bg-social-card hover:bg-slate-800 border border-slate-800 rounded-2xl p-4 flex items-center justify-between transition-colors group">
+           {/* Updated Referral Link to use Navigation */}
+           <button onClick={() => navigate('/referral')} className="w-full bg-social-card hover:bg-slate-800 border border-slate-800 rounded-2xl p-4 flex items-center justify-between transition-colors group">
                <div className="flex items-center gap-4">
                    <div className="w-10 h-10 rounded-xl bg-slate-800 group-hover:bg-green-500/10 flex items-center justify-center transition-colors">
                        <Gift size={20} className="text-slate-400 group-hover:text-green-500" />

@@ -36,16 +36,16 @@ export const getSupabaseConfig = () => {
 };
 
 export const SQL_SETUP_INSTRUCTION = `
--- 1. Kích hoạt extension
+-- 1. Kích hoạt extension (Bắt buộc cho random uuid)
 create extension if not exists "pgcrypto";
 
--- 2. Tạo bảng profiles (Thêm cột balance)
+-- 2. Tạo bảng profiles
 create table if not exists public.profiles (
   id uuid references auth.users on delete cascade primary key,
   email text,
   full_name text,
   avatar_url text,
-  balance decimal(10, 4) default 0.0000,
+  balance decimal(10, 4) default 0.0000 check (balance >= 0),
   updated_at timestamp with time zone
 );
 
@@ -60,7 +60,7 @@ create table if not exists public.links (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 4. Tạo bảng task_completions (Lưu lịch sử làm nhiệm vụ)
+-- 4. Tạo bảng task_completions (Lịch sử làm nhiệm vụ)
 create table if not exists public.task_completions (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users not null,
@@ -83,13 +83,13 @@ create table if not exists public.withdrawals (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 6. Tạo bảng referrals (Quản lý giới thiệu) - NEW
+-- 6. Tạo bảng referrals (Quản lý giới thiệu)
 create table if not exists public.referrals (
   id uuid default gen_random_uuid() primary key,
-  referrer_id uuid references public.profiles(id) not null, -- Người giới thiệu
-  referred_user_id uuid references public.profiles(id) not null unique, -- Người được giới thiệu
-  status text default 'pending', -- 'pending' (chưa làm NV), 'approved' (đã nhận thưởng)
-  reward_amount decimal(10, 4) default 0.0217, -- ~500 VND
+  referrer_id uuid references public.profiles(id) not null,
+  referred_user_id uuid references public.profiles(id) not null unique,
+  status text default 'pending', -- 'pending', 'approved'
+  reward_amount decimal(10, 4) default 0.0217,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -103,31 +103,26 @@ alter table public.referrals enable row level security;
 -- 8. Policies
 create policy "Public profiles" on public.profiles for select using (true);
 create policy "Update own profile" on public.profiles for update using (auth.uid() = id);
-create policy "Insert own profile" on public.profiles for insert with check (auth.uid() = id);
 
 create policy "Public links" on public.links for select using (true);
 create policy "Create links" on public.links for insert with check (auth.uid() = user_id);
-create policy "Manage links" on public.links for delete using (auth.uid() = user_id);
 
 create policy "View own completions" on public.task_completions for select using (auth.uid() = user_id);
 
 create policy "View own withdrawals" on public.withdrawals for select using (auth.uid() = user_id);
 create policy "Create withdrawals" on public.withdrawals for insert with check (auth.uid() = user_id);
-create policy "Admin update withdrawals" on public.withdrawals for update using (true);
 
 create policy "View referrals" on public.referrals for select using (auth.uid() = referrer_id or auth.uid() = referred_user_id);
 
--- 9. Trigger: Tạo Profile & Ghi nhận Referral khi đăng ký
+-- 9. Trigger: Tạo Profile & Ghi nhận Referral
 create or replace function public.handle_new_user()
 returns trigger as $$
 declare
   ref_id uuid;
 begin
-  -- Tạo Profile
   insert into public.profiles (id, email, full_name, balance)
   values (new.id, new.email, new.raw_user_meta_data->>'full_name', 0.0000);
 
-  -- Kiểm tra Referral Code (lấy từ metadata)
   ref_id := (new.raw_user_meta_data->>'referrer_id')::uuid;
   
   if ref_id is not null and exists (select 1 from public.profiles where id = ref_id) then
@@ -137,7 +132,7 @@ begin
 
   return new;
 exception when others then
-  return new; -- Ignore errors to ensure signup succeeds
+  return new;
 end;
 $$ language plpgsql security definer;
 
@@ -146,7 +141,7 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- 10. RPC: Hoàn thành nhiệm vụ & Trả thưởng Referral
+-- 10. RPC: Hoàn thành nhiệm vụ
 create or replace function complete_task(link_id uuid)
 returns void as $$
 declare
@@ -156,38 +151,31 @@ declare
 begin
   user_id := auth.uid();
   
-  -- Check Duplicate
   if exists (select 1 from public.task_completions tc where tc.link_id = complete_task.link_id and tc.user_id = complete_task.user_id) then
     raise exception 'Bạn đã hoàn thành nhiệm vụ này rồi.';
   end if;
 
-  -- Get Link Reward
   select reward_amount into reward from public.links where id = link_id;
   if reward is null then raise exception 'Link không tồn tại.'; end if;
 
-  -- 1. Cộng tiền cho User làm nhiệm vụ
+  -- Cộng tiền user
   insert into public.task_completions (user_id, link_id) values (user_id, link_id);
   update public.profiles set balance = balance + reward where id = user_id;
   update public.links set views = views + 1 where id = link_id;
 
-  -- 2. Kiểm tra Referral Reward (Nếu user này được giới thiệu và chưa trả thưởng)
+  -- Trả thưởng Referral (chỉ lần đầu)
   select * into ref_record from public.referrals 
   where referred_user_id = user_id and status = 'pending'
   limit 1;
 
   if found then
-      -- Cập nhật trạng thái Referral thành approved
       update public.referrals set status = 'approved' where id = ref_record.id;
-      
-      -- Cộng tiền hoa hồng cho người giới thiệu
-      update public.profiles 
-      set balance = balance + ref_record.reward_amount 
-      where id = ref_record.referrer_id;
+      update public.profiles set balance = balance + ref_record.reward_amount where id = ref_record.referrer_id;
   end if;
 end;
 $$ language plpgsql security definer;
 
--- 11. RPC: Hàm rút tiền
+-- 11. RPC: Rút tiền
 create or replace function request_withdrawal(amount decimal, bank_name text, account_number text, account_name text)
 returns void as $$
 declare

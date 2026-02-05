@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Wallet, User, LogOut, Zap, Bell, History, ShieldAlert, Home, LayoutDashboard } from 'lucide-react';
+import { Wallet, User, LogOut, Zap, Bell, History, ShieldAlert, Home } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import { APP_NAME, ADMIN_EMAIL } from '../constants';
 
@@ -19,7 +19,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, []);
 
   const checkAdmin = async () => {
-    const { data: { user } } = await supabase!.auth.getUser();
+    if (!supabase) return;
+    const { data: { user } } = await supabase.auth.getUser();
     if (user && user.email === ADMIN_EMAIL) {
         setIsAdmin(true);
     }
@@ -30,7 +31,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     window.location.href = '/login';
   };
 
-  // Khôi phục về 4 mục cơ bản để giao diện gọn gàng
+  // 4 mục cơ bản
   const navItems = [
     { icon: Home, label: 'Trang chủ', path: '/dashboard' },
     { icon: Wallet, label: 'Rút tiền', path: '/withdraw' }, 
@@ -38,9 +39,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     { icon: User, label: 'Tài khoản', path: '/account' }, 
   ];
 
-  if (isAdmin) {
-      navItems.push({ icon: ShieldAlert, label: 'Quản trị', path: '/admin' });
-  }
+  // Chỉ thêm Admin nếu đúng email
+  const displayItems = isAdmin 
+      ? [...navItems, { icon: ShieldAlert, label: 'Quản trị', path: '/admin' }]
+      : navItems;
 
   return (
     <div className="min-h-screen bg-social-bg text-social-text flex">
@@ -63,7 +65,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
 
         <nav className="flex-1 px-4 space-y-2">
-          {navItems.map((item, idx) => (
+          {displayItems.map((item, idx) => (
             <Link
               key={idx}
               to={item.path}
@@ -128,7 +130,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
+      {/* Mobile Bottom Nav - Only show basic 4 items */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 bg-social-card border-t border-slate-800 z-50 pb-safe shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
         <div className="flex justify-between items-center h-16 px-2">
           {navItems.map((item, idx) => (

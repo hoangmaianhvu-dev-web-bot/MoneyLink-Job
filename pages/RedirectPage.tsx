@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import { Loader2, CheckCircle, Search, Copy, Globe, AlertTriangle, Key, LogIn, ArrowLeft, Clock } from 'lucide-react';
+import { Loader2, CheckCircle, Search, Copy, Globe, AlertTriangle, Key, LogIn, ArrowLeft, Clock, EyeOff } from 'lucide-react';
 import { EXCHANGE_RATE } from '../constants';
 
 const RedirectPage: React.FC = () => {
@@ -18,6 +18,19 @@ const RedirectPage: React.FC = () => {
   const [claiming, setClaiming] = useState(false);
   const [fakeCode, setFakeCode] = useState('');
   const [inputCode, setInputCode] = useState('');
+  const [isTabActive, setIsTabActive] = useState(true);
+
+  // Anti-cheat refs
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    // Visibility Check (Anti-cheat)
+    const handleVisibilityChange = () => {
+        setIsTabActive(!document.hidden);
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
 
   useEffect(() => {
     const checkLink = async () => {
@@ -74,13 +87,18 @@ const RedirectPage: React.FC = () => {
   }, [slug]);
 
   useEffect(() => {
-    if (step === 2 && countdown > 0) {
-      const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (step === 2 && countdown === 0) {
-      setFakeCode(`MNL-${Math.floor(10000 + Math.random() * 90000)}`);
+    if (step === 2) {
+        if (countdown > 0 && isTabActive) {
+             timerRef.current = setTimeout(() => setCountdown(c => c - 1), 1000);
+        } else if (countdown === 0) {
+             // Generate "Fake" code when timer ends to simulate finding it on the site
+             setFakeCode(`MNL-${Math.floor(10000 + Math.random() * 90000)}`);
+        }
     }
-  }, [step, countdown]);
+    return () => {
+        if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [step, countdown, isTabActive]);
 
   const handleCopy = (text: string) => {
       navigator.clipboard.writeText(text);
@@ -89,7 +107,7 @@ const RedirectPage: React.FC = () => {
   const handleOpenGoogle = () => {
       window.open('https://google.com', '_blank');
       setStep(2); 
-      setCountdown(45); 
+      setCountdown(45); // Set task duration
   };
 
   const handleClaimReward = async () => {
@@ -267,13 +285,19 @@ const RedirectPage: React.FC = () => {
                         </div>
                     ) : (
                         <div>
+                            {!isTabActive && (
+                                <div className="mb-4 bg-red-500/20 border border-red-500/30 text-red-400 p-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 animate-pulse">
+                                    <EyeOff size={16} /> Vui lòng không rời khỏi trang!
+                                </div>
+                            )}
+
                              <div className="relative w-40 h-40 mx-auto mb-8 flex items-center justify-center">
                                 {/* SVG Timer Ring */}
                                 <svg className="w-full h-full transform -rotate-90">
                                     <circle cx="80" cy="80" r="70" stroke="#1f2937" strokeWidth="8" fill="none" />
                                     <circle 
                                         cx="80" cy="80" r="70" 
-                                        stroke="#3b82f6" 
+                                        stroke={isTabActive ? "#3b82f6" : "#ef4444"} 
                                         strokeWidth="8" 
                                         fill="none" 
                                         strokeLinecap="round"
@@ -283,16 +307,16 @@ const RedirectPage: React.FC = () => {
                                     />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-4xl font-bold text-white tracking-tighter">{countdown}</span>
+                                    <span className={`text-4xl font-bold tracking-tighter ${isTabActive ? 'text-white' : 'text-red-500'}`}>{countdown}</span>
                                     <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mt-1">GIÂY</span>
                                 </div>
                             </div>
                             
-                            <h3 className="text-white font-bold text-xl mb-3">Đang đợi mã xuất hiện...</h3>
-                            <div className="flex items-start gap-3 text-left bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
-                                <Clock size={20} className="text-blue-400 shrink-0 mt-0.5 animate-pulse" />
+                            <h3 className="text-white font-bold text-xl mb-3">{isTabActive ? 'Đang đợi mã xuất hiện...' : 'Đã tạm dừng!'}</h3>
+                            <div className={`flex items-start gap-3 text-left p-4 rounded-xl border transition-colors ${isTabActive ? 'bg-blue-500/10 border-blue-500/20' : 'bg-slate-800 border-slate-700'}`}>
+                                <Clock size={20} className={`shrink-0 mt-0.5 ${isTabActive ? 'text-blue-400 animate-pulse' : 'text-slate-500'}`} />
                                 <div>
-                                    <p className="text-blue-200 text-sm font-bold mb-1">Vui lòng chờ trên trang đích</p>
+                                    <p className={`text-sm font-bold mb-1 ${isTabActive ? 'text-blue-200' : 'text-slate-400'}`}>{isTabActive ? 'Vui lòng chờ trên trang đích' : 'Quay lại tab để tiếp tục'}</p>
                                     <p className="text-slate-400 text-xs">Hệ thống đang kiểm tra thời gian lưu trú của bạn. Đừng đóng tab Google nhé!</p>
                                 </div>
                             </div>
