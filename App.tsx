@@ -14,6 +14,7 @@ import Register from './pages/Register';
 import Admin from './pages/Admin';
 import Referral from './pages/Referral';
 import { SupabaseConfigModal } from './components/SupabaseConfigModal';
+import LoadingScreen from './components/LoadingScreen';
 
 function AppContent() {
   const [session, setSession] = useState<any>(null);
@@ -21,14 +22,28 @@ function AppContent() {
   const location = useLocation();
 
   useEffect(() => {
+    // Artificial delay to show the beautiful loading screen (optional, improves UX feel)
+    const minLoadTime = 1500; 
+    const start = Date.now();
+
+    const finishLoading = () => {
+        const now = Date.now();
+        const diff = now - start;
+        if (diff < minLoadTime) {
+            setTimeout(() => setLoading(false), minLoadTime - diff);
+        } else {
+            setLoading(false);
+        }
+    };
+
     if (!supabase) {
-      setLoading(false);
+      finishLoading();
       return;
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setLoading(false);
+      finishLoading();
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -39,11 +54,7 @@ function AppContent() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#18191a] flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Redirect Page (Standalone)
