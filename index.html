@@ -50,25 +50,32 @@
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 
-    <!-- 1. Load UMD Globals (Single Source of Truth) -->
+    <!-- 1. Load UMD Globals (Critical Order) -->
     <!-- React Core -->
     <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+    
+    <!-- React Router DOM (Must load after React) -->
+    <script src="https://unpkg.com/@remix-run/router@1.15.3/dist/router.umd.min.js"></script>
+    <script src="https://unpkg.com/react-router@6.22.3/dist/umd/react-router.production.min.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.22.3/dist/umd/react-router-dom.production.min.js"></script>
+
     <!-- Supabase Client -->
     <script crossorigin src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
-    <!-- Babel for compiling TSX -->
+    
+    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- 2. Map Imports to Globals via Data URIs -->
+    <!-- 2. Import Map (The Magic Glue) -->
     <script type="importmap">
 {
   "imports": {
     "react": "data:text/javascript;charset=utf-8,export%20default%20window.React%3Bexport%20const%20%7BuseState%2CuseEffect%2CuseContext%2CuseReducer%2CuseCallback%2CuseMemo%2CuseRef%2CuseImperativeHandle%2CuseLayoutEffect%2CuseDebugValue%2CuseDeferredValue%2CuseTransition%2CuseId%2Clazy%2CSuspense%2Cmemo%2CforwardRef%2CFragment%2CcreateContext%2CChildren%2CcloneElement%2CcreateElement%2CisValidElement%2CComponent%2CPureComponent%2CStrictMode%7D%3Dwindow.React%3B",
-    "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime?external=react",
     "react-dom": "data:text/javascript;charset=utf-8,export%20default%20window.ReactDOM%3B",
     "react-dom/client": "data:text/javascript;charset=utf-8,export%20default%20window.ReactDOM%3Bexport%20const%20%7BcreateRoot%2ChydrateRoot%7D%3Dwindow.ReactDOM%3B",
+    "react-router-dom": "data:text/javascript;charset=utf-8,export%20const%20%7BBrowserRouter%2CHashRouter%2CRoute%2CRoutes%2CLink%2CNavLink%2CuseParams%2CuseNavigate%2CuseLocation%2CuseHistory%2CuseRouteMatch%2CNavigate%2COutlet%7D%3Dwindow.ReactRouterDOM%3B",
     "@supabase/supabase-js": "data:text/javascript;charset=utf-8,export%20const%20%7BcreateClient%7D%3Dwindow.supabase%3B",
-    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3?external=react,react-dom",
+    "react/jsx-runtime": "data:text/javascript;charset=utf-8,export%20const%20jsx%3Dwindow.React.createElement%3Bexport%20const%20jsxs%3Dwindow.React.createElement%3Bexport%20const%20Fragment%3Dwindow.React.Fragment%3B",
     "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react,react-dom",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/"
