@@ -9,27 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "lucide-react": "0.344.0",
-    "react-dom": "^19.2.4",
     "react": "^19.2.4",
-    "./App": "latest",
-    "./supabaseClient": "latest",
-    "./constants": "latest",
-    "./types": "latest",
-    "./components/Navbar": "latest",
-    "./components/AppLayout": "latest",
-    "./components/SupabaseConfigModal": "latest",
-    "./components/LoadingScreen": "latest",
-    "./pages/Home": "latest",
-    "./pages/Dashboard": "latest",
-    "./pages/RedirectPage": "latest",
-    "./pages/Login": "latest",
-    "./pages/Register": "latest",
-    "./pages/Withdraw": "latest",
-    "./pages/History": "latest",
-    "./pages/Account": "latest",
-    "./pages/Admin": "latest",
-    "./pages/Referral": "latest"
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.0",
+    "lucide-react": "^0.563.0",
+    "@supabase/supabase-js": "^2.95.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

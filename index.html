@@ -86,26 +86,21 @@
           radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.1) 0px, transparent 50%);
         background-attachment: fixed;
       }
-      
-      /* Custom Scrollbar */
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: #111827; }
       ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
       ::-webkit-scrollbar-thumb:hover { background: #4B5563; }
-
       .glass-panel {
         background: rgba(17, 24, 39, 0.7);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.08);
       }
-      
       .gradient-text {
         background: linear-gradient(to right, #60A5FA, #A78BFA);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
       }
-
       .gold-gradient-text {
         background: linear-gradient(to right, #FACC15, #EAB308, #CA8A04);
         -webkit-background-clip: text;
@@ -113,59 +108,109 @@
       }
     </style>
 
-    <!-- 1. Load UMD Globals (Critical Order) -->
-    <!-- React Core -->
+    <!-- Dependencies -->
     <script crossorigin src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-    
-    <!-- React Router DOM (Must load after React) -->
     <script src="https://unpkg.com/@remix-run/router@1.15.3/dist/router.umd.min.js"></script>
     <script src="https://unpkg.com/react-router@6.22.3/dist/umd/react-router.production.min.js"></script>
     <script src="https://unpkg.com/react-router-dom@6.22.3/dist/umd/react-router-dom.production.min.js"></script>
-
-    <!-- Supabase Client -->
     <script crossorigin src="https://unpkg.com/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
-    
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- 2. Import Map (The Magic Glue) -->
-    <script type="importmap">
+  <script type="importmap">
 {
   "imports": {
-    "react": "data:text/javascript;charset=utf-8,export%20default%20window.React%3Bexport%20const%20%7BuseState%2CuseEffect%2CuseContext%2CuseReducer%2CuseCallback%2CuseMemo%2CuseRef%2CuseImperativeHandle%2CuseLayoutEffect%2CuseDebugValue%2CuseDeferredValue%2CuseTransition%2CuseId%2Clazy%2CSuspense%2Cmemo%2CforwardRef%2CFragment%2CcreateContext%2CChildren%2CcloneElement%2CcreateElement%2CisValidElement%2CComponent%2CPureComponent%2CStrictMode%7D%3Dwindow.React%3B",
-    "react-dom": "data:text/javascript;charset=utf-8,export%20default%20window.ReactDOM%3B",
-    "react-dom/client": "data:text/javascript;charset=utf-8,export%20default%20window.ReactDOM%3Bexport%20const%20%7BcreateRoot%2ChydrateRoot%7D%3Dwindow.ReactDOM%3B",
-    "react-router-dom": "data:text/javascript;charset=utf-8,export%20const%20%7BBrowserRouter%2CHashRouter%2CRoute%2CRoutes%2CLink%2CNavLink%2CuseParams%2CuseNavigate%2CuseLocation%2CuseHistory%2CuseRouteMatch%2CNavigate%2COutlet%7D%3Dwindow.ReactRouterDOM%3B",
-    "@supabase/supabase-js": "data:text/javascript;charset=utf-8,export%20const%20%7BcreateClient%7D%3Dwindow.supabase%3B",
-    "react/jsx-runtime": "data:text/javascript;charset=utf-8,export%20const%20jsx%3Dwindow.React.createElement%3Bexport%20const%20jsxs%3Dwindow.React.createElement%3Bexport%20const%20Fragment%3Dwindow.React.Fragment%3B",
-    "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react,react-dom",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
     "react/": "https://esm.sh/react@^19.2.4/",
-    "./App": "./App.tsx",
-    "./supabaseClient": "./supabaseClient.ts",
-    "./constants": "./constants.ts",
-    "./types": "./types.ts",
-    "./components/Navbar": "./components/Navbar.tsx",
-    "./components/AppLayout": "./components/AppLayout.tsx",
-    "./components/SupabaseConfigModal": "./components/SupabaseConfigModal.tsx",
-    "./components/LoadingScreen": "./components/LoadingScreen.tsx",
-    "./pages/Home": "./pages/Home.tsx",
-    "./pages/Dashboard": "./pages/Dashboard.tsx",
-    "./pages/RedirectPage": "./pages/RedirectPage.tsx",
-    "./pages/Login": "./pages/Login.tsx",
-    "./pages/Register": "./pages/Register.tsx",
-    "./pages/Withdraw": "./pages/Withdraw.tsx",
-    "./pages/History": "./pages/History.tsx",
-    "./pages/Account": "./pages/Account.tsx",
-    "./pages/Admin": "./pages/Admin.tsx",
-    "./pages/Referral": "./pages/Referral.tsx"
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.95.2"
   }
 }
 </script>
-  </head>
+</head>
   <body>
     <div id="root"></div>
-    <script type="text/babel" data-type="module" src="./index.tsx"></script>
+
+    <!-- APP LOADER SCRIPT -->
+    <script>
+      (async function bootstrap() {
+        // 1. Danh sách các file source code cần tải
+        const files = [
+          { name: './supabaseClient', path: './supabaseClient.ts' },
+          { name: './constants', path: './constants.ts' },
+          { name: './types', path: './types.ts' },
+          { name: './components/Navbar', path: './components/Navbar.tsx' },
+          { name: './components/AppLayout', path: './components/AppLayout.tsx' },
+          { name: './components/SupabaseConfigModal', path: './components/SupabaseConfigModal.tsx' },
+          { name: './components/LoadingScreen', path: './components/LoadingScreen.tsx' },
+          { name: './pages/Home', path: './pages/Home.tsx' },
+          { name: './pages/Dashboard', path: './pages/Dashboard.tsx' },
+          { name: './pages/RedirectPage', path: './pages/RedirectPage.tsx' },
+          { name: './pages/Login', path: './pages/Login.tsx' },
+          { name: './pages/Register', path: './pages/Register.tsx' },
+          { name: './pages/Withdraw', path: './pages/Withdraw.tsx' },
+          { name: './pages/History', path: './pages/History.tsx' },
+          { name: './pages/Account', path: './pages/Account.tsx' },
+          { name: './pages/Admin', path: './pages/Admin.tsx' },
+          { name: './pages/Referral', path: './pages/Referral.tsx' },
+          { name: './App', path: './App.tsx' },
+          { name: './index', path: './index.tsx' }
+        ];
+
+        // 2. Định nghĩa các thư viện ngoài (CDN shims)
+        const imports = {
+          "react": "data:text/javascript;charset=utf-8,export%20default%20window.React%3Bexport%20const%20%7BuseState%2CuseEffect%2CuseContext%2CuseReducer%2CuseCallback%2CuseMemo%2CuseRef%2CuseImperativeHandle%2CuseLayoutEffect%2CuseDebugValue%2CuseDeferredValue%2CuseTransition%2CuseId%2Clazy%2CSuspense%2Cmemo%2CforwardRef%2CFragment%2CcreateContext%2CChildren%2CcloneElement%2CcreateElement%2CisValidElement%2CComponent%2CPureComponent%2CStrictMode%7D%3Dwindow.React%3B",
+          "react-dom": "data:text/javascript;charset=utf-8,export%20default%20window.ReactDOM%3B",
+          "react-dom/client": "data:text/javascript;charset=utf-8,export%20default%20window.ReactDOM%3Bexport%20const%20%7BcreateRoot%2ChydrateRoot%7D%3Dwindow.ReactDOM%3B",
+          "react-router-dom": "data:text/javascript;charset=utf-8,export%20const%20%7BBrowserRouter%2CHashRouter%2CRoute%2CRoutes%2CLink%2CNavLink%2CuseParams%2CuseNavigate%2CuseLocation%2CuseHistory%2CuseRouteMatch%2CNavigate%2COutlet%7D%3Dwindow.ReactRouterDOM%3B",
+          "@supabase/supabase-js": "data:text/javascript;charset=utf-8,export%20const%20%7BcreateClient%7D%3Dwindow.supabase%3B",
+          "react/jsx-runtime": "data:text/javascript;charset=utf-8,export%20const%20jsx%3Dwindow.React.createElement%3Bexport%20const%20jsxs%3Dwindow.React.createElement%3Bexport%20const%20Fragment%3Dwindow.React.Fragment%3B",
+          "lucide-react": "https://esm.sh/lucide-react@0.344.0?external=react,react-dom",
+        };
+
+        try {
+          // 3. Tải và biên dịch song song tất cả các file
+          await Promise.all(files.map(async (file) => {
+            const res = await fetch(file.path);
+            if (!res.ok) throw new Error(`Không thể tải file: ${file.path}`);
+            const code = await res.text();
+            
+            // Biên dịch TSX/TS -> JS bằng Babel
+            const compiled = Babel.transform(code, {
+              presets: ['react', ['typescript', { isTSX: true, allExtensions: true }]],
+              filename: file.path
+            }).code;
+
+            // Tạo Blob URL cho file đã biên dịch
+            const blob = new Blob([compiled], { type: 'application/javascript' });
+            imports[file.name] = URL.createObjectURL(blob);
+          }));
+
+          // 4. Inject Import Map vào thẻ <head>
+          const mapEl = document.createElement('script');
+          mapEl.type = "importmap";
+          mapEl.textContent = JSON.stringify({ imports });
+          document.head.appendChild(mapEl);
+
+          // 5. Chạy Entry Point (index.tsx)
+          const entryEl = document.createElement('script');
+          entryEl.type = "module";
+          entryEl.textContent = "import './index';";
+          document.body.appendChild(entryEl);
+
+        } catch (err) {
+          console.error("Lỗi khởi động ứng dụng:", err);
+          document.getElementById('root').innerHTML = `
+            <div style="color: #ef4444; padding: 20px; font-family: monospace; text-align: center;">
+              <h2 style="font-size: 20px; margin-bottom: 10px;">Lỗi khởi động</h2>
+              <p>${err.message}</p>
+              <p style="font-size: 12px; color: #6b7280; margin-top: 10px;">Vui lòng kiểm tra Console (F12) để biết chi tiết.</p>
+            </div>
+          `;
+        }
+      })();
+    </script>
   </body>
 </html>
